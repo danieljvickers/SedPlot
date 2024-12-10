@@ -3,9 +3,14 @@ import numpy as np
 import matplotlib.animation as animation
 from matplotlib import cm
 import pydub
-import moviepy.editor as mp
+import moviepy as mp
 import os
 import math
+import tqdm
+
+
+import warnings
+warnings.filterwarnings('ignore')
 
 
 class TimeDomainParameters:
@@ -239,13 +244,14 @@ class SoundDisplay:
                 return
 
             if file_ending == 'mp4' and self.do_add_audio_to_animation:
-                ani.save('temp.mp4', writer=writer, dpi=self.graphics_settings.dpi)
+                with tqdm.tqdm(total=self.total_frames, desc='Saving video') as progress_bar:
+                    ani.save('temp.mp4', writer=writer, dpi=self.graphics_settings.dpi, progress_callback=lambda i, n: progress_bar.update(1))
                 audio = mp.AudioFileClip(self.input_file_name)
                 video1 = mp.VideoFileClip('temp.mp4')
                 final_duration = min(audio.duration, video1.duration)
-                video2 = video1.set_duration(final_duration)
+                video2 = video1.with_duration(final_duration)
                 video2.write_videofile(self.output_file_name)
-                final_video = video2.set_audio(audio.set_duration(final_duration))
+                final_video = video2.with_audio(audio.with_duration(final_duration))
                 final_video.write_videofile(self.output_file_name)
                 os.remove('temp.mp4')
             else:

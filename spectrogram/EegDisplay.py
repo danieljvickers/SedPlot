@@ -2,7 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.animation as animation
 from matplotlib import cm
-import moviepy.editor as mp
+import moviepy as mp
+# import moviepy.editor as 
 import os
 from .SoundDisplay import TimeDomainParameters, FrequencyDomainParameters, GraphicsSettings
 import pyedflib
