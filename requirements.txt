@@ -1,0 +1,7 @@
+matplotlib==3.9.3
+moviepy==2.1.1
+numpy==2.2.0
+pydub==0.25.1
+pyEDFlib==0.1.38
+scipy==1.14.1
+tqdm==4.67.1
