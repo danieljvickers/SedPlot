@@ -69,3 +69,14 @@ Finally, there are uncategorized parameters:
 | fps | 40 | Sets the frames per second of the animation, and determines the fast time of the plot |
 | T_slow | 40 | Sets the slow-time duration of the spectrogram |
 | total_frames | -1 | Sets the total number of frames to plot for. When -1, default to plotting the entire file content |
+
+## Installation
+
+This library requires some video and edf dependencies in order to run. We document those here.
+
+| Dependency | Required for |
+| - | - |
+| ffmpeg | Video rendering of mp4s and opening of mp3s |
+| pydub | Editing of .mp3 files |
+| moviepy | Video rendering wrapper around ffmpeg |
+| pyedf | Reading and editing EDF files | 

@@ -4,6 +4,8 @@ from spectrogram.SoundDisplay import SoundDisplay
 from spectrogram.EegDisplay import EegDisplay
 import os
 
+os.environ["IMAGEIO_FFMPEG_EXE"] = "/usr/bin/ffmpeg"
+
 
 def gen_all_in_dir():
     files = ['c_scale.mp3'] # os.listdir("C:\\Users\\Daniel\\Documents\\eeg_video\\sounds_clips\\")
@@ -63,27 +65,28 @@ def gen_specific_file():
 
 def gen_audio_spec():
     # C:\Users\Daniel\Documents\scripts\music_spectrogram\small_animations\open_eeg
-    spec_display = SoundDisplay(input_file_name=r"C:\Users\Daniel\Documents\eeg_video\narration\ElevenLabs_2024-06-06T10_21_04_Rafael ORTEGA - English_pvc_s50_sb75_t2.mp3", num_channels=1)  # this is the file we are loading
-    spec_display.output_file_name = r"C:\Users\Daniel\Documents\eeg_video\narration\narrator_voice_0606.mp4"  # output file name
+    spec_display = SoundDisplay(input_file_name=r"bin/cant_stop_red_hot_chilli_peppers.mp3", num_channels=2)  # this is the file we are loading
+    spec_display.output_file_name = r"bin/cant_stop.mp4"  # output file name
     spec_display.do_save_animation = True
     spec_display.do_spectrogram_plot = True
     spec_display.do_plot_spectral_edge_on_spectrogram = False
     spec_display.frequency_domain_parameters.do_frequency_domain_plot = False
-    spec_display.time_domain_parameters.do_time_domain_plot = True
+    spec_display.time_domain_parameters.do_time_domain_plot = False
     spec_display.do_spectral_edge_frequency = False
     spec_display.do_add_audio_to_animation = True
     spec_display.graphics_settings.figure_size = (16, 9)
     spec_display.fps = 30
-    spec_display.graphics_settings.dpi = 250  # uncomment this to save in 4k
+    # spec_display.graphics_settings.dpi = 250  # uncomment this to save in 4k
     spec_display.do_add_audio_to_animation = True
     spec_display.graphics_settings.do_render_plot_axis = False
     spec_display.frequency_domain_parameters.max_plot_frequency = 1800
 
-    # spec_display.frequency_domain_parameters.max_db_power = 110
-    # spec_display.frequency_domain_parameters.min_db_power = 60
-
-    spec_display.frequency_domain_parameters.max_db_power = 120
+    spec_display.frequency_domain_parameters.max_db_power = 130
     spec_display.frequency_domain_parameters.min_db_power = 100
+
+    # spec_display.frequency_domain_parameters.max_db_power = 120
+    # spec_display.frequency_domain_parameters.min_db_power = 100
+    # spec_display.total_frames = 1000
 
     spec_display.create_plot_from_data()
 
