@@ -9,6 +9,7 @@ from .SoundDisplay import TimeDomainParameters, FrequencyDomainParameters, Graph
 import pyedflib
 from scipy.io import wavfile
 import math
+import tqdm
 
 
 def peak_decay(time, peak, alpha):
@@ -96,9 +97,12 @@ class EegDisplay:
         else:
             self.do_simulate = False
             for file in file_array:
-                signals, signal_headers, header = pyedflib.highlevel.read_edf(file)
-                self.sample_rate = signal_headers[channel_number]['sample_rate']
-                self.data = np.concatenate((self.data, signals[channel_number]))
+                try:
+                    signals, signal_headers, header = pyedflib.highlevel.read_edf(file)
+                    self.sample_rate = signal_headers[channel_number]['sample_rate']
+                    self.data = np.concatenate((self.data, signals[channel_number]))
+                except:
+                    print("Unable to load file: " + file)
 
     def create_plot_from_data(self):
         # check if we should return immediately
@@ -262,13 +266,15 @@ class EegDisplay:
             if file_ending == 'gif':
                 writer = animation.PillowWriter(fps=self.fps, metadata=dict(artist='Daniel J. Vickers'), bitrate=-1)
             elif file_ending == 'mp4':
-                writer = animation.FFMpegWriter(fps=self.fps)
+                writer = animation.FFMpegWriter(fps=self.fps) #, extra_args=['-vcodec', 'libx264'])
             else:
                 print('ERROR: ' + file_ending + ' is not a valid output file format')
                 return
 
             if file_ending == 'mp4' and self.do_add_audio_to_animation:
-                ani.save('temp.mp4', writer=writer, dpi=self.graphics_settings.dpi)
+                with tqdm.tqdm(total=self.total_frames, desc='Saving video') as progress_bar:
+                    ani.save('temp.mp4', writer=writer, dpi=self.graphics_settings.dpi, progress_callback=lambda i, n: progress_bar.update(1))
+                # ani.save('temp.mp4', writer=writer, dpi=self.graphics_settings.dpi)
 
                 # audio_rate = int(self.sample_rate * 2.5 * 40)
                 audio_rate = int(self.sample_rate * T_fast * self.fps)
@@ -278,9 +284,9 @@ class EegDisplay:
                 audio = mp.AudioFileClip('temp.wav')
                 video1 = mp.VideoFileClip('temp.mp4')
                 final_duration = min(audio.duration, video1.duration)
-                video2 = video1.set_duration(final_duration)
+                video2 = video1.with_duration(final_duration)
                 video2.write_videofile(self.output_file_name)
-                final_video = video2.set_audio(audio.set_duration(final_duration))
+                final_video = video2.with_audio(audio.with_duration(final_duration))
                 final_video.write_videofile(self.output_file_name)
                 os.remove('temp.mp4')
                 os.remove('temp.wav')

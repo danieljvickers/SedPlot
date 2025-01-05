@@ -65,8 +65,8 @@ def gen_specific_file():
 
 def gen_audio_spec():
     # C:\Users\Daniel\Documents\scripts\music_spectrogram\small_animations\open_eeg
-    spec_display = SoundDisplay(input_file_name=r"bin/cant_stop_red_hot_chilli_peppers.mp3", num_channels=2)  # this is the file we are loading
-    spec_display.output_file_name = r"bin/cant_stop.mp4"  # output file name
+    spec_display = SoundDisplay(input_file_name=r"bin/by_the_way.mp3", num_channels=2)  # this is the file we are loading
+    spec_display.output_file_name = r"bin/by_the_way.mp4"  # output file name
     spec_display.do_save_animation = True
     spec_display.do_spectrogram_plot = True
     spec_display.do_plot_spectral_edge_on_spectrogram = False
@@ -128,10 +128,10 @@ def gen_all_edf():
         print('Done with file: ' + edf_file)
 
 
-def gen_full_case():
+def gen_full_case(directory):
     ch_number = 0
-    directory = r"C:\Users\Daniel\Documents\eeg_video\0506_data\Root_2000026958_20240505_081711\\"
     files = os.listdir(directory)
+    files.sort()
 
     spec_display = EegDisplay()
     spec_display.do_save_animation = True
@@ -167,8 +167,16 @@ def gen_full_case():
         print('ERROR :: Encountered in file ' + edf_file)'''
 
 
+def gen_series_of_dir_eeg(directory):
+    directories = [os.path.join(directory, name) for name in os.listdir(directory) if os.path.isdir(os.path.join(directory, name))]
+    print(directories)
+    for path in directories:
+        gen_full_case(path + '/')
+
+
 def main():
-    gen_audio_spec()
+    gen_full_case(r"/home/dan/Documents/data/lambert_eeg_data/subset/")
+    # gen_series_of_dir_eeg(r"/home/dan/Documents/data/lambert_eeg_data/")
 
 
 if __name__ == '__main__':
