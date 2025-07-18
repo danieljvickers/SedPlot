@@ -27,6 +27,7 @@ class EEGArray:
                 print(f"Unable to load file: {file}")
 
         elif type(file_array) is list:
+            file_array = file_array.sort()  # required for linux compatability. TODO :: find a better way to handle this in case someone wants to order this on their own
             for file in file_array:
                 assert os.path.exists(file), f"ERROR :: The file '{file} does not exists.'"
                 try:
