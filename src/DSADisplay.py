@@ -1,15 +1,21 @@
+# graphical rendering libraries
 import matplotlib.pyplot as plt
-import numpy as np
 import matplotlib.animation as animation
 from matplotlib import cm
 import moviepy as mp
-# import moviepy.editor as 
-import os
-from .SoundDisplay import TimeDomainParameters, FrequencyDomainParameters, GraphicsSettings
-import pyedflib
+
+# math and scientific libraries
+import numpy as np
 from scipy.io import wavfile
 import math
-import tqdm
+
+# basic os and gui management libraries
+import os
+from tqdm.gui import tqdm
+
+# internal data structures
+from .EEGArray import EEGArray
+from .GraphicsSettings import GraphicsSettings, ProcessingSettings
 
 class SpectralDisplay:
     do_save_animation = False
@@ -17,45 +23,19 @@ class SpectralDisplay:
     do_spectrogram_plot = True
     do_spectral_edge_frequency = False
     do_plot_spectral_edge_on_spectrogram = False
-    input_file_name = ''
-    output_file_name = ''
-    fps = 40
-    T_slow = 20*60
-    T_fast = 2.5
-    time_domain_parameters = TimeDomainParameters()
-    frequency_domain_parameters = FrequencyDomainParameters()
-    graphics_settings = GraphicsSettings()
-    sample_rate = 250
-    data = []
-    total_frames = -1
+    outputFileName = ''
+    graphicsSettings = GraphicsSettings()
+    processingSettigns = ProcessingSettings
+    totalFrames = -1
 
-    def __init__(self, input_file_name, channel_number=0):
-        self.frequency_domain_parameters.max_plot_frequency = 40
-        self.frequency_domain_parameters.max_db_power = 10
-        self.frequency_domain_parameters.min_db_power = -45
-        self.load_data_from_file(input_file_name, channel_number)
+    def __init__(self, inputFileName, channel_number=0):
+        self.eegData = EEGArray(inputFileName)
 
-    def load_data_from_file(self, file_name, channel_number=0):
-        signals, signal_headers, header = pyedflib.highlevel.read_edf(file_name)
-        self.sample_rate = signal_headers[channel_number]['sample_rate']
-        self.data = signals[channel_number]
-
-    def load_array_of_data(self, file_array, channel_number=0):
-        if not file_array:
-            self.do_simulate = True
-        else:
-            self.do_simulate = False
-            for file in file_array:
-                try:
-                    signals, signal_headers, header = pyedflib.highlevel.read_edf(file)
-                    self.sample_rate = signal_headers[channel_number]['sample_rate']
-                    self.data = np.concatenate((self.data, signals[channel_number]))
-                except:
-                    print("Unable to load file: " + file)
+    def get_spectral_edge_frequency_value
 
     def create_plot_from_data(self):
         # check if we should return immediately
-        if self.do_save_animation and self.output_file_name == '':
+        if self.do_save_animation and self.outputFileName == '':
             print('No output filename set')
             return
 
@@ -108,15 +88,15 @@ class SpectralDisplay:
                 sed_plot.set_array(sed_array.transpose())
 
         # initialize some variables used in the plot generation
-        num_samples = int(math.floor(self.sample_rate * self.T_fast))
-        t = np.array([i / self.sample_rate for i in range(num_samples)])
-        f = np.fft.fftshift(np.fft.fftfreq(len(t), d=1 / self.sample_rate))
+        num_samples = int(math.floor(self.eegData.sampleRate * self.T_fast))
+        t = np.array([i / self.eegData.sampleRate for i in range(num_samples)])
+        f = np.fft.fftshift(np.fft.fftfreq(len(t), d=1 / self.eegData.sampleRate))
         num_frequency_points = 0
         for f_sample in f:
             if 0. <= f_sample <= self.frequency_domain_parameters.max_plot_frequency:
                 num_frequency_points += 1
-        if self.total_frames < 0:
-            self.total_frames = int(math.floor(len(self.data) / num_samples))
+        if self.totalFrames < 0:
+            self.totalFrames = int(math.floor(len(self.data) / num_samples))
 
         # start the outline of the basic plots
         fig = plt.figure(figsize=self.graphics_settings.figure_size)
@@ -196,11 +176,11 @@ class SpectralDisplay:
         plt.tight_layout()
 
         # start the animation
-        ani = animation.FuncAnimation(fig, run_animation, repeat=False, frames=self.total_frames, interval=T_fast * 1000)
+        ani = animation.FuncAnimation(fig, run_animation, repeat=False, frames=self.totalFrames, interval=T_fast * 1000)
         if not self.do_save_animation:
             plt.show()
         else:
-            file_ending = self.output_file_name.split('.')[-1]
+            file_ending = self.outputFileName.split('.')[-1]
             writer = 0
             if file_ending == 'gif':
                 writer = animation.PillowWriter(fps=self.fps, metadata=dict(artist='Daniel J. Vickers'), bitrate=-1)
@@ -211,12 +191,10 @@ class SpectralDisplay:
                 return
 
             if file_ending == 'mp4' and self.do_add_audio_to_animation:
-                with tqdm.tqdm(total=self.total_frames, desc='Saving video') as progress_bar:
+                with tqdm(total=self.totalFrames, desc='Saving video') as progress_bar:
                     ani.save('temp.mp4', writer=writer, dpi=self.graphics_settings.dpi, progress_callback=lambda i, n: progress_bar.update(1))
-                # ani.save('temp.mp4', writer=writer, dpi=self.graphics_settings.dpi)
 
-                # audio_rate = int(self.sample_rate * 2.5 * 40)
-                audio_rate = int(self.sample_rate * self.T_fast * self.fps)
+                audio_rate = int(self.eegData.sampleRate * self.T_fast * self.fps)
                 scaled_data = np.int16(self.data / np.max(np.abs(self.data)) * int(2 ** 15))
                 wavfile.write('temp.wav', audio_rate, scaled_data)
 
@@ -224,12 +202,12 @@ class SpectralDisplay:
                 video1 = mp.VideoFileClip('temp.mp4')
                 final_duration = min(audio.duration, video1.duration)
                 video2 = video1.with_duration(final_duration)
-                video2.write_videofile(self.output_file_name)
+                video2.write_videofile(self.outputFileName)
                 final_video = video2.with_audio(audio.with_duration(final_duration))
-                final_video.write_videofile(self.output_file_name)
+                final_video.write_videofile(self.outputFileName)
                 os.remove('temp.mp4')
                 os.remove('temp.wav')
             else:
-                ani.save(self.output_file_name, writer=writer, dpi=self.graphics_settings.dpi)
+                ani.save(self.outputFileName, writer=writer, dpi=self.graphics_settings.dpi)
         return
 
