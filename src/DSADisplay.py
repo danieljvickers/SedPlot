@@ -17,38 +17,44 @@ from tqdm.gui import tqdm
 from .EEGArray import EEGArray
 from .GraphicsSettings import GraphicsSettings, ProcessingSettings
 
+
 class SpectralDisplay:
-    do_save_animation = False
-    do_add_audio_to_animation = False
-    do_spectrogram_plot = True
-    do_spectral_edge_frequency = False
-    do_plot_spectral_edge_on_spectrogram = False
-    outputFileName = ''
+    do_save_animation = False  # determines if the animation is saved or just played to the screen
+    do_add_audio_to_animation = False  # determines if the EEG video output will be sonicated
+    do_spectrogram_plot = True  # Determines if a spectrogram plot will be rendered
+    do_spectral_edge_frequency = False  # determines if the SEF will be rendered as a standalone plot
+    do_plot_spectral_edge_on_spectrogram = False  # determins if the SEF will be rendered on top of the spectrogram
     graphicsSettings = GraphicsSettings()
     processingSettigns = ProcessingSettings
     startFrame = 0
     endFrame = -1
     totalFrames = -1
+    sefPercent = 80
 
-    def __init__(self, inputFileName, channel_number=0):
+
+    def __init__(self, inputFileName):
         self.eegData = EEGArray(inputFileName)
+
 
     # takes in frequency-domain data to compute the SEF80
     def calc_SEF_value(f, linear_data, num_frequency_points):
         y_in_sum = np.fft.ifftshift(linear_data)[:num_frequency_points]  # gets the section of the array that we will be summing
         total_power = sum(y_in_sum)  # computes the total power in the array
         for i in range(len(y_in_sum)):
-            if sum(y_in_sum[:i]) > total_power * 0.8:  # check if we are over the SEF80
+            if sum(y_in_sum[:i]) > total_power * (self.sefPercent / 100.):  # check if we are over the SEF80
                 return np.fft.ifftshift(f)[i-1]  # return the SEF value at this point
 
-    def create_plot_from_data(self):
-        if self.do_save_animation and self.outputFileName == '':
+
+    # main loop which renders the plots
+    def create_plot_from_data(self, outputFileName='', channel_number=0):
+        if self.do_save_animation and outputFileName == '':
             raise ('Requested to save, but no output filename set.')
 
         # define the animation function which is called every frame
         spectral_edge_frequency = 0
-        def run_animation(i):
-            y = np.array(self.data[num_samples * i:num_samples * (i + 1)])
+        def run_animation(frame_number):
+            global_index = self.startFrame + frame_number
+            y = np.array(self.eegData.data[channel_number][num_samples * i:num_samples * (i + 1)])
 
             # handle the time-domain plotting case
             if self.graphicsSettings.timeDomainParameters.do_time_domain_plot:
@@ -185,7 +191,7 @@ class SpectralDisplay:
         if not self.do_save_animation:
             plt.show()
         else:
-            file_ending = self.outputFileName.split('.')[-1]
+            file_ending = outputFileName.split('.')[-1]
             writer = 0
             if file_ending == 'gif':
                 writer = animation.PillowWriter(fps=self.fps, metadata=dict(artist='Daniel J. Vickers'), bitrate=-1)
@@ -207,12 +213,11 @@ class SpectralDisplay:
                 video1 = mp.VideoFileClip('temp.mp4')
                 final_duration = min(audio.duration, video1.duration)
                 video2 = video1.with_duration(final_duration)
-                video2.write_videofile(self.outputFileName)
+                video2.write_videofile(outputFileName)
                 final_video = video2.with_audio(audio.with_duration(final_duration))
-                final_video.write_videofile(self.outputFileName)
+                final_video.write_videofile(outputFileName)
                 os.remove('temp.mp4')
                 os.remove('temp.wav')
             else:
-                ani.save(self.outputFileName, writer=writer, dpi=self.graphics_settings.dpi)
+                ani.save(outputFileName, writer=writer, dpi=self.graphics_settings.dpi)
         return
-
