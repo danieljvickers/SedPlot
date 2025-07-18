@@ -26,45 +26,50 @@ class SpectralDisplay:
     outputFileName = ''
     graphicsSettings = GraphicsSettings()
     processingSettigns = ProcessingSettings
+    startFrame = 0
+    endFrame = -1
     totalFrames = -1
 
     def __init__(self, inputFileName, channel_number=0):
         self.eegData = EEGArray(inputFileName)
 
-    def get_spectral_edge_frequency_value
+    # takes in frequency-domain data to compute the SEF80
+    def calc_SEF_value(f, linear_data, num_frequency_points):
+        y_in_sum = np.fft.ifftshift(linear_data)[:num_frequency_points]  # gets the section of the array that we will be summing
+        total_power = sum(y_in_sum)  # computes the total power in the array
+        for i in range(len(y_in_sum)):
+            if sum(y_in_sum[:i]) > total_power * 0.8:  # check if we are over the SEF80
+                return np.fft.ifftshift(f)[i-1]  # return the SEF value at this point
 
     def create_plot_from_data(self):
-        # check if we should return immediately
         if self.do_save_animation and self.outputFileName == '':
-            print('No output filename set')
-            return
+            raise ('Requested to save, but no output filename set.')
 
-        # define the animation function
+        # define the animation function which is called every frame
+        spectral_edge_frequency = 0
         def run_animation(i):
-            y = np.zeros(len(t))
             y = np.array(self.data[num_samples * i:num_samples * (i + 1)])
 
+            # handle the time-domain plotting case
             if self.time_domain_parameters.do_time_domain_plot:
                 fast_time_line.set_data(t, np.real(y) * 1000)
 
+            # handels the case of plotting the SEF graph
             y_f_linear = abs(np.fft.fftshift(np.fft.fft(y)))
-            # spectral_edge = np.fft.ifftshift(f)[num_frequency_points]
             if self.do_spectral_edge_frequency or self.do_plot_spectral_edge_on_spectrogram:
-                y_in_sum = np.fft.ifftshift(y_f_linear)[:num_frequency_points]
-                total_power = sum(y_in_sum)
-                for i in range(len(y_in_sum)):
-                    if sum(y_in_sum[:i]) > total_power * 0.8:
-                        spectral_edge = np.fft.ifftshift(f)[i-1]
-                        break
+                spectral_edge_frequency = self.calc_SEF_value(f, y_f_linear, num_frequency_points)
                 if self.do_spectral_edge_frequency:
                     spectral_edge_data = np.roll(sef_line.get_ydata(), -1, axis=0)
-                    spectral_edge_data[-1] = spectral_edge
+                    spectral_edge_data[-1] = spectral_edge_frequency
                     sef_line.set_ydata(spectral_edge_data)
+
+            # convert the frequency-domain data to dB and replace 0s with small numbers that will not conver to NaNs
             for i in range(1, len(y_f_linear)):
                 if y_f_linear[i] == 0.:
-                    y_f_linear[i] = 1e-16
+                    y_f_linear[i] = 1e-100
             y_f = 20 * np.log10(y_f_linear)
 
+            # handle plotting in the frequency domain.
             if self.frequency_domain_parameters.do_frequency_domain_plot:
                 if self.frequency_domain_parameters.do_frequency_domain_as_colored_scatter:
                     scatter_data = np.column_stack((f, y_f))
@@ -81,9 +86,8 @@ class SpectralDisplay:
                 sed_array = np.roll(sed_array, -1, axis=0)
                 if self.do_plot_spectral_edge_on_spectrogram:
                     spectral_edge_data = np.roll(sef_on_spec.get_ydata(), -1, axis=0)
-                    spectral_edge_data[-1] = self.frequency_domain_parameters.max_plot_frequency - spectral_edge
+                    spectral_edge_data[-1] = self.frequency_domain_parameters.max_plot_frequency - spectral_edge_frequency
                     sef_on_spec.set_ydata(spectral_edge_data)
-                    # y_f[np.where(f == spectral_edge)] = 'nan'
                 sed_array[-1] = np.flip(np.fft.ifftshift(y_f)[:len(sed_array[0])])
                 sed_plot.set_array(sed_array.transpose())
 
@@ -95,8 +99,9 @@ class SpectralDisplay:
         for f_sample in f:
             if 0. <= f_sample <= self.frequency_domain_parameters.max_plot_frequency:
                 num_frequency_points += 1
-        if self.totalFrames < 0:
-            self.totalFrames = int(math.floor(len(self.data) / num_samples))
+        if self.endFrame < 0:
+            self.endFrame = int(math.floor(len(self.data) / num_samples))
+        totalFrames = self.endFrame - self.startFrame
 
         # start the outline of the basic plots
         fig = plt.figure(figsize=self.graphics_settings.figure_size)
@@ -176,7 +181,7 @@ class SpectralDisplay:
         plt.tight_layout()
 
         # start the animation
-        ani = animation.FuncAnimation(fig, run_animation, repeat=False, frames=self.totalFrames, interval=T_fast * 1000)
+        ani = animation.FuncAnimation(fig, run_animation, repeat=False, frames=totalFrames, interval=T_fast * 1000)
         if not self.do_save_animation:
             plt.show()
         else:
@@ -191,7 +196,7 @@ class SpectralDisplay:
                 return
 
             if file_ending == 'mp4' and self.do_add_audio_to_animation:
-                with tqdm(total=self.totalFrames, desc='Saving video') as progress_bar:
+                with tqdm(total=totalFrames, desc='Saving video') as progress_bar:
                     ani.save('temp.mp4', writer=writer, dpi=self.graphics_settings.dpi, progress_callback=lambda i, n: progress_bar.update(1))
 
                 audio_rate = int(self.eegData.sampleRate * self.T_fast * self.fps)
