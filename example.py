@@ -65,8 +65,8 @@ def gen_specific_file():
 
 def gen_audio_spec():
     # C:\Users\Daniel\Documents\scripts\music_spectrogram\small_animations\open_eeg
-    spec_display = SoundDisplay(input_file_name=r"bin/by_the_way.mp3", num_channels=2)  # this is the file we are loading
-    spec_display.output_file_name = r"bin/by_the_way.mp4"  # output file name
+    spec_display = SoundDisplay(input_file_name=r"bin/freebird.mp3", num_channels=2)  # this is the file we are loading
+    spec_display.output_file_name = r"bin/freebird.mp4"  # output file name
     spec_display.do_save_animation = True
     spec_display.do_spectrogram_plot = True
     spec_display.do_plot_spectral_edge_on_spectrogram = False
@@ -79,7 +79,8 @@ def gen_audio_spec():
     # spec_display.graphics_settings.dpi = 250  # uncomment this to save in 4k
     spec_display.do_add_audio_to_animation = True
     spec_display.graphics_settings.do_render_plot_axis = False
-    spec_display.frequency_domain_parameters.max_plot_frequency = 1800
+    # spec_display.frequency_domain_parameters.max_plot_frequency = 1800
+    spec_display.frequency_domain_parameters.max_plot_frequency = 3000
 
     spec_display.frequency_domain_parameters.max_db_power = 130
     spec_display.frequency_domain_parameters.min_db_power = 100
@@ -132,6 +133,7 @@ def gen_full_case(directory):
     ch_number = 0
     files = os.listdir(directory)
     files.sort()
+    print(files)
 
     spec_display = EegDisplay()
     spec_display.do_save_animation = True
@@ -155,7 +157,7 @@ def gen_full_case(directory):
     for edf_file in files:
         if edf_file.split('.')[-1] == 'edf':
             files_to_load.append(directory + edf_file)
-    files_to_load.pop(0)
+    # files_to_load.pop(0)
     print("Found " + str(len(files_to_load)) + " total files")
     spec_display.load_array_of_data(files_to_load, channel_number=ch_number)
     spec_display.output_file_name = directory + str(ch_number) + "_full_case.mp4"
@@ -175,7 +177,8 @@ def gen_series_of_dir_eeg(directory):
 
 
 def main():
-    gen_full_case(r"/home/dan/Documents/data/lambert_eeg_data/subset/")
+    gen_full_case(r"/home/dan/Documents/data/lambert_eeg_data/20250212_from_Lambert/")
+    # gen_audio_spec()
     # gen_series_of_dir_eeg(r"/home/dan/Documents/data/lambert_eeg_data/")
 
 
