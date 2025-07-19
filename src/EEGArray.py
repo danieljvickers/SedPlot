@@ -22,9 +22,9 @@ class EEGArray:
                 signals, signal_headers, header = pyedflib.highlevel.read_edf(file_array)  # read in the data with the pyedf library
                 self.sampleRate = signal_headers[0]['sample_rate']  # fetch the sample rate
                 for channel_number in range(len(signals)):
-                    self.data.insert(signals[channel_number])  # get out the data from each channel and store it into the array
+                    self.data.append(signals[channel_number])  # get out the data from each channel and store it into the array
             except:
-                print(f"Unable to load file: {file}")
+                raise (f"Unable to load file: {file_array}")
 
         elif type(file_array) is list:
             file_array = file_array.sort()  # required for linux compatability. TODO :: find a better way to handle this in case someone wants to order this on their own

@@ -18,14 +18,14 @@ from .EEGArray import EEGArray
 from .GraphicsSettings import GraphicsSettings, ProcessingSettings
 
 
-class SpectralDisplay:
+class DSADisplay:
     do_save_animation = False  # determines if the animation is saved or just played to the screen
     do_add_audio_to_animation = False  # determines if the EEG video output will be sonicated
     do_spectrogram_plot = True  # Determines if a spectrogram plot will be rendered
     do_spectral_edge_frequency = False  # determines if the SEF will be rendered as a standalone plot
     do_plot_spectral_edge_on_spectrogram = False  # determins if the SEF will be rendered on top of the spectrogram
     graphicsSettings = GraphicsSettings()
-    processingSettigns = ProcessingSettings
+    processingSettings = ProcessingSettings()
     startFrame = 0
     endFrame = -1
     totalFrames = -1
@@ -37,7 +37,7 @@ class SpectralDisplay:
 
 
     # takes in frequency-domain data to compute the SEF80
-    def calc_SEF_value(f, linear_data, num_frequency_points):
+    def calc_SEF_value(self, f, linear_data, num_frequency_points):
         y_in_sum = np.fft.ifftshift(linear_data)[:num_frequency_points]  # gets the section of the array that we will be summing
         total_power = sum(y_in_sum)  # computes the total power in the array
         for i in range(len(y_in_sum)):
@@ -98,7 +98,7 @@ class SpectralDisplay:
                 sed_plot.set_array(sed_array.transpose())
 
         # initialize some variables used in the plot generation
-        num_samples = int(math.floor(self.eegData.sampleRate * self.T_fast))
+        num_samples = int(math.floor(self.eegData.sampleRate * self.processingSettings.T_fast))
         t = np.array([i / self.eegData.sampleRate for i in range(num_samples)])
         f = np.fft.fftshift(np.fft.fftfreq(len(t), d=1 / self.eegData.sampleRate))
         num_frequency_points = 0
@@ -106,11 +106,11 @@ class SpectralDisplay:
             if 0. <= f_sample <= self.graphicsSettings.frequencyDomainParameters.max_plot_frequency:
                 num_frequency_points += 1
         if self.endFrame < 0:
-            self.endFrame = int(math.floor(len(self.data) / num_samples))
+            self.endFrame = int(math.floor(len(self.eegData.data) / num_samples))
         totalFrames = self.endFrame - self.startFrame
 
         # start the outline of the basic plots
-        fig = plt.figure(figsize=self.graphics_settings.figure_size)
+        fig = plt.figure(figsize=self.graphicsSettings.renderSettings.figure_size)
         total_number_plot = 0
         t_index, f_index, s_index, sef_index = -1, -1, -1, -1
         if self.graphicsSettings.timeDomainParameters.do_time_domain_plot:
@@ -138,15 +138,15 @@ class SpectralDisplay:
             if i == t_index:
                 if self.graphicsSettings.timeDomainParameters.do_time_domain_plot:
                     fast_time_line = plt.plot([])[0]
-                    plt.xlabel('Time (s)', fontsize=self.graphics_settings.font_size)
-                    plt.ylabel('Energy ($\\mu$V)', fontsize=self.graphics_settings.font_size)
-                    plt.xlim([0, self.T_fast])
+                    plt.xlabel('Time (s)', fontsize=self.graphicsSettings.font_size)
+                    plt.ylabel('Energy ($\\mu$V)', fontsize=self.graphicsSettings.font_size)
+                    plt.xlim([0, self.processingSettings.T_fast])
                     plt.ylim([-self.graphicsSettings.timeDomainParameters.time_amplitude, self.graphicsSettings.timeDomainParameters.time_amplitude])
             elif i == f_index:
                 if self.graphicsSettings.frequencyDomainParameters.do_frequency_domain_plot:
                     if self.graphicsSettings.frequencyDomainParameters.do_frequency_domain_as_colored_scatter:
-                        frequency_line = plt.scatter(np.zeros(int(self.graphicsSettings.frequencyDomainParameters.max_plot_frequency * self.T_fast)),
-                                                     np.zeros(int(self.graphicsSettings.frequencyDomainParameters.max_plot_frequency * self.T_fast)),
+                        frequency_line = plt.scatter(np.zeros(int(self.graphicsSettings.frequencyDomainParameters.max_plot_frequency * self.processingSettings.T_fast)),
+                                                     np.zeros(int(self.graphicsSettings.frequencyDomainParameters.max_plot_frequency * self.processingSettings.T_fast)),
                                                      cmap='jet', vmin=self.graphicsSettings.frequencyDomainParameters.min_db_power,
                                                      vmax=self.graphicsSettings.frequencyDomainParameters.max_db_power)
                     else:
@@ -154,40 +154,40 @@ class SpectralDisplay:
                     plt.xlim([0, self.graphicsSettings.frequencyDomainParameters.max_plot_frequency])
                     plt.ylim([self.graphicsSettings.frequencyDomainParameters.min_db_power - self.graphicsSettings.frequencyDomainParameters.outside_db_to_plot,
                               self.graphicsSettings.frequencyDomainParameters.max_db_power + self.graphicsSettings.frequencyDomainParameters.outside_db_to_plot])
-                    plt.xlabel('Frequency (Hz)', fontsize=self.graphics_settings.font_size)
-                    plt.ylabel('Power (dB)', fontsize=self.graphics_settings.font_size)
+                    plt.xlabel('Frequency (Hz)', fontsize=self.graphicsSettings.font_size)
+                    plt.ylabel('Power (dB)', fontsize=self.graphicsSettings.font_size)
             elif i == s_index:
                 if self.do_spectrogram_plot:
-                    empty_sed_array = np.array([np.zeros(num_frequency_points) - 100 for i in range(int(self.T_slow / self.T_fast))])
+                    empty_sed_array = np.array([np.zeros(num_frequency_points) - 100 for i in range(int(self.processingSettings.T_slow / self.processingSettings.T_fast))])
                     sed_plot = plt.imshow(empty_sed_array.transpose(), cmap='jet',
                                           vmin=self.graphicsSettings.frequencyDomainParameters.min_db_power,
                                           vmax=self.graphicsSettings.frequencyDomainParameters.max_db_power,
                                           aspect='auto', interpolation='bilinear',
-                                          extent=[-int(self.T_slow / 60), 0, self.graphicsSettings.frequencyDomainParameters.max_plot_frequency, 0])
+                                          extent=[-int(self.processingSettings.T_slow / 60), 0, self.graphicsSettings.frequencyDomainParameters.max_plot_frequency, 0])
                     cbar = plt.colorbar()
-                    cbar.set_label('Power (dB)', fontsize=self.graphics_settings.font_size)
+                    cbar.set_label('Power (dB)', fontsize=self.graphicsSettings.font_size)
                     ax3.set_yticks(np.array([-0. + i*self.graphicsSettings.frequencyDomainParameters.max_plot_frequency/4 for i in range(5)]))
                     ax3.set_yticklabels(np.arange(self.graphicsSettings.frequencyDomainParameters.max_plot_frequency, -0.5,
                                                   -int(self.graphicsSettings.frequencyDomainParameters.max_plot_frequency / 4)))
                     if self.do_plot_spectral_edge_on_spectrogram:
-                        negative_times = [(-self.T_slow + i * self.T_fast) / 60 for i in range(int(self.T_slow / self.T_fast))]
+                        negative_times = [(-self.processingSettings.T_slow + i * self.processingSettings.T_fast) / 60 for i in range(int(self.processingSettings.T_slow / self.processingSettings.T_fast))]
                         sef_on_spec = ax3.plot(negative_times, [self.graphicsSettings.frequencyDomainParameters.max_plot_frequency
-                                                                for i in range(int(self.T_slow / self.T_fast))],
+                                                                for i in range(int(self.processingSettings.T_slow / self.processingSettings.T_fast))],
                                                color='white', linewidth=3)[0]
-                    plt.xlabel('Time (min)', fontsize=self.graphics_settings.font_size)
-                    plt.ylabel('Frequency (Hz)', fontsize=self.graphics_settings.font_size)
+                    plt.xlabel('Time (min)', fontsize=self.graphicsSettings.font_size)
+                    plt.ylabel('Frequency (Hz)', fontsize=self.graphicsSettings.font_size)
             elif i == sef_index:
                 if self.do_spectral_edge_frequency:
-                    negative_times = [-self.T_slow + i * self.T_fast for i in range(int(self.T_slow / self.T_fast))]
-                    sef_line = plt.plot(negative_times, [0 for i in range(int(self.T_slow / self.T_fast))])[0]
-                    plt.xlabel('Time (s)', fontsize=self.graphics_settings.font_size)
-                    plt.ylabel('SEF (Hz)', fontsize=self.graphics_settings.font_size)
+                    negative_times = [-self.processingSettings.T_slow + i * self.processingSettings.T_fast for i in range(int(self.processingSettings.T_slow / self.processingSettings.T_fast))]
+                    sef_line = plt.plot(negative_times, [0 for i in range(int(self.processingSettings.T_slow / self.processingSettings.T_fast))])[0]
+                    plt.xlabel('Time (s)', fontsize=self.graphicsSettings.font_size)
+                    plt.ylabel('SEF (Hz)', fontsize=self.graphicsSettings.font_size)
                     plt.ylim([0, self.graphicsSettings.frequencyDomainParameters.max_plot_frequency])
-                    plt.xlim([-self.T_slow, 0])
+                    plt.xlim([-self.processingSettings.T_slow, 0])
         plt.tight_layout()
 
         # start the animation
-        ani = animation.FuncAnimation(fig, run_animation, repeat=False, frames=totalFrames, interval=self.T_fast * 1000)
+        ani = animation.FuncAnimation(fig, run_animation, repeat=False, frames=totalFrames, interval=self.processingSettings.T_fast * 1000)
         if not self.do_save_animation:
             plt.show()
         else:
@@ -203,10 +203,10 @@ class SpectralDisplay:
 
             if file_ending == 'mp4' and self.do_add_audio_to_animation:
                 with tqdm(total=totalFrames, desc='Saving video') as progress_bar:
-                    ani.save('temp.mp4', writer=writer, dpi=self.graphics_settings.dpi, progress_callback=lambda i, n: progress_bar.update(1))
+                    ani.save('temp.mp4', writer=writer, dpi=self.graphicsSettings.dpi, progress_callback=lambda i, n: progress_bar.update(1))
 
-                audio_rate = int(self.eegData.sampleRate * self.T_fast * self.fps)
-                scaled_data = np.int16(self.data / np.max(np.abs(self.data)) * int(2 ** 15))
+                audio_rate = int(self.eegData.sampleRate * self.processingSettings.T_fast * self.fps)
+                scaled_data = np.int16(self.eegData.data / np.max(np.abs(self.eegData.data)) * int(2 ** 15))
                 wavfile.write('temp.wav', audio_rate, scaled_data)
 
                 audio = mp.AudioFileClip('temp.wav')
@@ -219,5 +219,5 @@ class SpectralDisplay:
                 os.remove('temp.mp4')
                 os.remove('temp.wav')
             else:
-                ani.save(outputFileName, writer=writer, dpi=self.graphics_settings.dpi)
+                ani.save(outputFileName, writer=writer, dpi=self.graphicsSettings.dpi)
         return
