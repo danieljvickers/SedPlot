@@ -11,7 +11,8 @@ import math
 
 # basic os and gui management libraries
 import os
-from tqdm.gui import tqdm
+# from tqdm.gui import tqdm
+from tqdm import tqdm
 
 # internal data structures
 from .EEGArray import EEGArray
@@ -28,7 +29,6 @@ class DSADisplay:
     processingSettings = ProcessingSettings()
     startFrame = 0
     endFrame = -1
-    totalFrames = -1
     sefPercent = 80
 
 
@@ -54,7 +54,7 @@ class DSADisplay:
         spectral_edge_frequency = 0
         def run_animation(frame_number):
             global_index = self.startFrame + frame_number
-            y = np.array(self.eegData.data[channel_number][num_samples * i:num_samples * (i + 1)])
+            y = np.array(self.eegData.data[channel_number][num_samples * global_index:num_samples * (global_index + 1)])
 
             # handle the time-domain plotting case
             if self.graphicsSettings.timeDomainParameters.do_time_domain_plot:
@@ -106,8 +106,8 @@ class DSADisplay:
             if 0. <= f_sample <= self.graphicsSettings.frequencyDomainParameters.max_plot_frequency:
                 num_frequency_points += 1
         if self.endFrame < 0:
-            self.endFrame = int(math.floor(len(self.eegData.data) / num_samples))
-        totalFrames = self.endFrame - self.startFrame
+            self.endFrame = int(math.floor(len(self.eegData.data[channel_number]) / num_samples))
+        total_frames = int(self.endFrame - self.startFrame)
 
         # start the outline of the basic plots
         fig = plt.figure(figsize=self.graphicsSettings.renderSettings.figure_size)
@@ -138,8 +138,8 @@ class DSADisplay:
             if i == t_index:
                 if self.graphicsSettings.timeDomainParameters.do_time_domain_plot:
                     fast_time_line = plt.plot([])[0]
-                    plt.xlabel('Time (s)', fontsize=self.graphicsSettings.font_size)
-                    plt.ylabel('Energy ($\\mu$V)', fontsize=self.graphicsSettings.font_size)
+                    plt.xlabel('Time (s)', fontsize=self.graphicsSettings.renderSettings.font_size)
+                    plt.ylabel('Energy ($\\mu$V)', fontsize=self.graphicsSettings.renderSettings.font_size)
                     plt.xlim([0, self.processingSettings.T_fast])
                     plt.ylim([-self.graphicsSettings.timeDomainParameters.time_amplitude, self.graphicsSettings.timeDomainParameters.time_amplitude])
             elif i == f_index:
@@ -154,8 +154,8 @@ class DSADisplay:
                     plt.xlim([0, self.graphicsSettings.frequencyDomainParameters.max_plot_frequency])
                     plt.ylim([self.graphicsSettings.frequencyDomainParameters.min_db_power - self.graphicsSettings.frequencyDomainParameters.outside_db_to_plot,
                               self.graphicsSettings.frequencyDomainParameters.max_db_power + self.graphicsSettings.frequencyDomainParameters.outside_db_to_plot])
-                    plt.xlabel('Frequency (Hz)', fontsize=self.graphicsSettings.font_size)
-                    plt.ylabel('Power (dB)', fontsize=self.graphicsSettings.font_size)
+                    plt.xlabel('Frequency (Hz)', fontsize=self.graphicsSettings.renderSettings.font_size)
+                    plt.ylabel('Power (dB)', fontsize=self.graphicsSettings.renderSettings.font_size)
             elif i == s_index:
                 if self.do_spectrogram_plot:
                     empty_sed_array = np.array([np.zeros(num_frequency_points) - 100 for i in range(int(self.processingSettings.T_slow / self.processingSettings.T_fast))])
@@ -165,7 +165,7 @@ class DSADisplay:
                                           aspect='auto', interpolation='bilinear',
                                           extent=[-int(self.processingSettings.T_slow / 60), 0, self.graphicsSettings.frequencyDomainParameters.max_plot_frequency, 0])
                     cbar = plt.colorbar()
-                    cbar.set_label('Power (dB)', fontsize=self.graphicsSettings.font_size)
+                    cbar.set_label('Power (dB)', fontsize=self.graphicsSettings.renderSettings.font_size)
                     ax3.set_yticks(np.array([-0. + i*self.graphicsSettings.frequencyDomainParameters.max_plot_frequency/4 for i in range(5)]))
                     ax3.set_yticklabels(np.arange(self.graphicsSettings.frequencyDomainParameters.max_plot_frequency, -0.5,
                                                   -int(self.graphicsSettings.frequencyDomainParameters.max_plot_frequency / 4)))
@@ -174,38 +174,38 @@ class DSADisplay:
                         sef_on_spec = ax3.plot(negative_times, [self.graphicsSettings.frequencyDomainParameters.max_plot_frequency
                                                                 for i in range(int(self.processingSettings.T_slow / self.processingSettings.T_fast))],
                                                color='white', linewidth=3)[0]
-                    plt.xlabel('Time (min)', fontsize=self.graphicsSettings.font_size)
-                    plt.ylabel('Frequency (Hz)', fontsize=self.graphicsSettings.font_size)
+                    plt.xlabel('Time (min)', fontsize=self.graphicsSettings.renderSettings.font_size)
+                    plt.ylabel('Frequency (Hz)', fontsize=self.graphicsSettings.renderSettings.font_size)
             elif i == sef_index:
                 if self.do_spectral_edge_frequency:
                     negative_times = [-self.processingSettings.T_slow + i * self.processingSettings.T_fast for i in range(int(self.processingSettings.T_slow / self.processingSettings.T_fast))]
                     sef_line = plt.plot(negative_times, [0 for i in range(int(self.processingSettings.T_slow / self.processingSettings.T_fast))])[0]
-                    plt.xlabel('Time (s)', fontsize=self.graphicsSettings.font_size)
-                    plt.ylabel('SEF (Hz)', fontsize=self.graphicsSettings.font_size)
+                    plt.xlabel('Time (s)', fontsize=self.graphicsSettings.renderSettings.font_size)
+                    plt.ylabel('SEF (Hz)', fontsize=self.graphicsSettings.renderSettings.font_size)
                     plt.ylim([0, self.graphicsSettings.frequencyDomainParameters.max_plot_frequency])
                     plt.xlim([-self.processingSettings.T_slow, 0])
         plt.tight_layout()
 
         # start the animation
-        ani = animation.FuncAnimation(fig, run_animation, repeat=False, frames=totalFrames, interval=self.processingSettings.T_fast * 1000)
+        ani = animation.FuncAnimation(fig, run_animation, repeat=False, frames=total_frames, interval=self.processingSettings.T_fast * 1000)
         if not self.do_save_animation:
             plt.show()
         else:
             file_ending = outputFileName.split('.')[-1]
             writer = 0
             if file_ending == 'gif':
-                writer = animation.PillowWriter(fps=self.fps, metadata=dict(artist='Daniel J. Vickers'), bitrate=-1)
+                writer = animation.PillowWriter(fps=self.graphicsSettings.renderSettings.fps, metadata=dict(artist='Daniel J. Vickers'), bitrate=-1)
             elif file_ending == 'mp4':
-                writer = animation.FFMpegWriter(fps=self.fps) #, extra_args=['-vcodec', 'libx264'])
+                writer = animation.FFMpegWriter(fps=self.graphicsSettings.renderSettings.fps) #, extra_args=['-vcodec', 'libx264'])
             else:
                 print('ERROR: ' + file_ending + ' is not a valid output file format')
                 return
 
             if file_ending == 'mp4' and self.do_add_audio_to_animation:
-                with tqdm(total=totalFrames, desc='Saving video') as progress_bar:
-                    ani.save('temp.mp4', writer=writer, dpi=self.graphicsSettings.dpi, progress_callback=lambda i, n: progress_bar.update(1))
+                with tqdm(total=total_frames, desc='Saving video') as progress_bar:
+                    ani.save('temp.mp4', writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=lambda i, n: progress_bar.update(1))
 
-                audio_rate = int(self.eegData.sampleRate * self.processingSettings.T_fast * self.fps)
+                audio_rate = int(self.eegData.sampleRate * self.processingSettings.T_fast * self.graphicsSettings.renderSettings.fps)
                 scaled_data = np.int16(self.eegData.data / np.max(np.abs(self.eegData.data)) * int(2 ** 15))
                 wavfile.write('temp.wav', audio_rate, scaled_data)
 
@@ -219,5 +219,6 @@ class DSADisplay:
                 os.remove('temp.mp4')
                 os.remove('temp.wav')
             else:
-                ani.save(outputFileName, writer=writer, dpi=self.graphicsSettings.dpi)
+                with tqdm(total=total_frames, desc='Saving video') as progress_bar:
+                    ani.save(outputFileName, writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=lambda i, n: progress_bar.update(1))
         return
