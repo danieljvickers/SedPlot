@@ -15,6 +15,7 @@ class FrequencyDomainParameters:
 class RenderSettings:
     figure_size = [10, 10]
     font_size = 18
+    tick_size = 14
     dpi = 100
     do_render_plot_axis = True
     fps = 40

@@ -35,11 +35,29 @@ def submit():
     renderer.do_save_animation = True
     renderer.graphicsSettings.frequencyDomainParameters.min_db_power = get_box_number(min_db_variable)
     renderer.graphicsSettings.frequencyDomainParameters.max_db_power = get_box_number(max_db_variable)
+    renderer.graphicsSettings.renderSettings.font_size = axis_font_var.get()
+    renderer.graphicsSettings.renderSettings.tick_size = tick_font_var.get()
+
     set_resolution(renderer, resolution.get())
+    if do_sef_var.get():
+        renderer.do_plot_spectral_edge_on_spectrogram = True
+    if do_audio_var.get():
+        renderer.do_add_audio_to_animation = True
+    if do_frequency_spectrum_var.get():
+        renderer.graphicsSettings.frequencyDomainParameters.do_frequency_domain_plot = True
+    if do_time_domain_var.get():
+        renderer.graphicsSettings.timeDomainParameters.do_time_domain_plot = True
 
     renderer.create_animation_from_data(outputFileName=out_file.get(), channel_number=0, tk_progress_bar=progress_object)
     
     # destroy the box when done
+    del renderer
+    # root.destroy()
+
+
+def quit_me():
+    print("Closing App...")
+    root.quit()
     root.destroy()
 
 
@@ -72,16 +90,25 @@ def get_output_file():
 
 def set_resolution(render_object, resolution):
     render_object.graphicsSettings.renderSettings.figure_size = (16, 9)
-    if resolution == "1920x1080":
+    if resolution == "1080p (1920x1080)":
         render_object.graphicsSettings.renderSettings.dpi = 120
     elif resolution == "2560x1440":
         render_object.graphicsSettings.renderSettings.dpi = 160
-    elif resolution == "3840x2160":
+    elif resolution == "4K (3840x2160)":
         render_object.graphicsSettings.renderSettings.dpi = 140
+    elif resolution == "720p (1280x720)":
+        render_object.graphicsSettings.renderSettings.dpi = 80
+    elif resolution == "360p (640x360)":
+        render_object.graphicsSettings.renderSettings.dpi = 40
+    elif resolution == "480p (640x480)":
+        render_object.graphicsSettings.renderSettings.dpi = 40
+        render_object.graphicsSettings.renderSettings.figure_size == (16, 12)
+
 
 #create root
 row_counter = 1
 root = tk.Tk()
+root.protocol("WM_DELETE_WINDOW", quit_me)
 root.title("Generate Video")
 
 # input for the input file
@@ -107,6 +134,19 @@ max_db_label.grid(row=row_counter+1, column=1)
 max_db_entry.grid(row=row_counter+1, column=2)
 row_counter += 2
 
+# font sizes
+axis_font_var = tk.IntVar(root, value=18)
+tick_font_var = tk.IntVar(root, value=14)
+axis_font_label = tk.Label(root, text='Axis Font Size', font=('calibre', 10, 'bold'))
+tick_font_label = tk.Label(root, text='Tick Font Size', font=('calibre', 10, 'bold'))
+axis_font_entry = tk.Entry(root, textvariable=axis_font_var, width=TK_WIDTH)
+tick_font_entry = tk.Entry(root, textvariable=tick_font_var, width=TK_WIDTH)
+axis_font_label.grid(row=row_counter, column=1)
+axis_font_entry.grid(row=row_counter, column=2)
+tick_font_label.grid(row=row_counter+1, column=1)
+tick_font_entry.grid(row=row_counter+1, column=2)
+row_counter += 2
+
 # input for the output file
 out_file = tk.StringVar(value='test.mp4')
 out_label = tk.Label(root, text='Output File', font=('calibre', 10, 'bold'))
@@ -118,25 +158,48 @@ out_button.grid(row=row_counter, column=3)
 row_counter += 1
 
 # output resolution selection
-resolutions = ["1080p (1920x1080)", "2560x1440", "4K (3840x2160)"]
+resolutions = ["360p (640x360)", "480p (640x480)", "720p (1280x720)", "1080p (1920x1080)", "2560x1440", "4K (3840x2160)"]
 resolution = tk.StringVar(root)
-resolution.set(resolutions[0])
+resolution.set(resolutions[3])
 dropdown = tk.OptionMenu(root, resolution, *resolutions)
 dropdown_label = tk.Label(root, text='Output Resolution', font=('calibre', 10, 'bold'))
 dropdown_label.grid(row=row_counter, column=1)
 dropdown.grid(row=row_counter, column=2)
 row_counter += 1
 
+# check boxes
+do_sef_var = tk.BooleanVar(root)  # check if you want to do the SEF on the plot
+do_audio_var = tk.BooleanVar(root)  # check if you want to add audio to the video
+do_frequency_spectrum_var = tk.BooleanVar(root)
+do_time_domain_var = tk.BooleanVar(root)
+do_sef_checkbox = tk.Checkbutton(root, text="Plot SEF", variable=do_sef_var, onvalue=True, offvalue=False)
+do_aidio_checkbox = tk.Checkbutton(root, text="Sonicate", variable=do_audio_var, onvalue=True, offvalue=False)
+do_frequency_domain_checkbox = tk.Checkbutton(root, text="Plot Freq. Domain", variable=do_frequency_spectrum_var, onvalue=True, offvalue=False)
+do_time_domain_checkbox = tk.Checkbutton(root, text="Plot Time Domain", variable=do_time_domain_var, onvalue=True, offvalue=False)
+do_sef_checkbox.grid(row=row_counter, column=1)
+do_aidio_checkbox.grid(row=row_counter, column=2)
+do_frequency_domain_checkbox.grid(row=row_counter, column=3)
+do_time_domain_checkbox.grid(row=row_counter + 1, column=1)
+row_counter += 2
+
 # The submission button to create the video
 submit_button = tk.Button(root, text="Generate", command=submit)
 submit_button.grid(row=row_counter, column=1,
-                   columnspan=2, pady=10)
+                   columnspan=3, pady=10, sticky="ew")
 row_counter += 1
 
 # Progress bar
-progress_bar = ttk.Progressbar(root, orient='horizontal', mode='determinate', length=TK_WIDTH*1.5)
+ttk.Style().configure("Custom.Horizontal.TProgressbar",
+                    background="light green",  # Color of the filled part
+                    troughcolor="lightgray",  # Color of the empty part
+                    bordercolor="darkgray", # Outline border
+                    lightcolor="white", # Inner border highlight
+                    darkcolor="gray") # Inner border shadow
+progress_bar = ttk.Progressbar(root, orient='horizontal', mode='determinate', length=TK_WIDTH*1.5, style="Custom.Horizontal.TProgressbar")
 progress_object = TkProgress(root, progress_bar)
-progress_bar.grid(row=row_counter, column=2, columnspan=1, pady=10, sticky="ew")
+progress_bar.grid(row=row_counter, column=1, columnspan=3, pady=10, sticky="ew")
+row_counter += 1
+
 
 root.columnconfigure(2, minsize=TK_WIDTH)
 root.columnconfigure(2, weight=1)

@@ -57,7 +57,7 @@ class DSADisplay:
 
             # handle the time-domain plotting case
             if self.graphicsSettings.timeDomainParameters.do_time_domain_plot:
-                fast_time_line.set_data(t, np.real(y) * 1000)
+                fast_time_line.set_data(t, np.real(y))
 
             # handels the case of plotting the SEF graph
             y_f_linear = abs(np.fft.fftshift(np.fft.fft(y)))
@@ -141,6 +141,8 @@ class DSADisplay:
                     plt.ylabel('Energy ($\\mu$V)', fontsize=self.graphicsSettings.renderSettings.font_size)
                     plt.xlim([0, self.processingSettings.T_fast])
                     plt.ylim([-self.graphicsSettings.timeDomainParameters.time_amplitude, self.graphicsSettings.timeDomainParameters.time_amplitude])
+                    plt.xticks(fontsize=GraphicsSettings.renderSettings.tick_size)
+                    plt.yticks(fontsize=GraphicsSettings.renderSettings.tick_size)
             elif i == f_index:
                 if self.graphicsSettings.frequencyDomainParameters.do_frequency_domain_plot:
                     if self.graphicsSettings.frequencyDomainParameters.do_frequency_domain_as_colored_scatter:
@@ -155,6 +157,8 @@ class DSADisplay:
                               self.graphicsSettings.frequencyDomainParameters.max_db_power + self.graphicsSettings.frequencyDomainParameters.outside_db_to_plot])
                     plt.xlabel('Frequency (Hz)', fontsize=self.graphicsSettings.renderSettings.font_size)
                     plt.ylabel('Power (dB)', fontsize=self.graphicsSettings.renderSettings.font_size)
+                    plt.xticks(fontsize=GraphicsSettings.renderSettings.tick_size)
+                    plt.yticks(fontsize=GraphicsSettings.renderSettings.tick_size)
             elif i == s_index:
                 if self.do_spectrogram_plot:
                     empty_sed_array = np.array([np.zeros(num_frequency_points) - 100 for i in range(int(self.processingSettings.T_slow / self.processingSettings.T_fast))])
@@ -175,6 +179,8 @@ class DSADisplay:
                                                color='white', linewidth=3)[0]
                     plt.xlabel('Time (min)', fontsize=self.graphicsSettings.renderSettings.font_size)
                     plt.ylabel('Frequency (Hz)', fontsize=self.graphicsSettings.renderSettings.font_size)
+                    plt.xticks(fontsize=GraphicsSettings.renderSettings.tick_size)
+                    plt.yticks(fontsize=GraphicsSettings.renderSettings.tick_size)
             elif i == sef_index:
                 if self.do_spectral_edge_frequency:
                     negative_times = [-self.processingSettings.T_slow + i * self.processingSettings.T_fast for i in range(int(self.processingSettings.T_slow / self.processingSettings.T_fast))]
@@ -183,6 +189,8 @@ class DSADisplay:
                     plt.ylabel('SEF (Hz)', fontsize=self.graphicsSettings.renderSettings.font_size)
                     plt.ylim([0, self.graphicsSettings.frequencyDomainParameters.max_plot_frequency])
                     plt.xlim([-self.processingSettings.T_slow, 0])
+                    plt.xticks(fontsize=GraphicsSettings.renderSettings.tick_size)
+                    plt.yticks(fontsize=GraphicsSettings.renderSettings.tick_size)
         plt.tight_layout()
 
         # start the animation
@@ -201,8 +209,12 @@ class DSADisplay:
                 return
 
             if file_ending == 'mp4' and self.do_add_audio_to_animation:
-                with tqdm(total=total_frames, desc='Saving video') as progress_bar:
-                    ani.save('temp.mp4', writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=lambda i, n: progress_bar.update(1))
+                if not tk_progress_bar:  # uses tqdm if there is no external progress bar in the GUI
+                    with tqdm(total=total_frames, desc='Saving video') as progress_bar:
+                        ani.save('temp.mp4', writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=lambda i, n: progress_bar.update(1))
+                else:
+                    tk_progress_bar.set_bar_max(total_frames)
+                    ani.save(outputFileName, writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=tk_progress_bar.update_bar)
 
                 audio_rate = int(self.eegData.sampleRate * self.processingSettings.T_fast * self.graphicsSettings.renderSettings.fps)
                 scaled_data = np.int16(self.eegData.data / np.max(np.abs(self.eegData.data)) * int(2 ** 15))
