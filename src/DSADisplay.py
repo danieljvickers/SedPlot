@@ -45,7 +45,7 @@ class DSADisplay:
 
 
     # main loop which renders the plots
-    def create_plot_from_data(self, outputFileName='', channel_number=0, tk_progress_bar=None):
+    def create_animation_from_data(self, outputFileName='', channel_number=0, tk_progress_bar=None):
         if self.do_save_animation and outputFileName == '':
             raise ('Requested to save, but no output filename set.')
 

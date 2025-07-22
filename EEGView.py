@@ -37,7 +37,7 @@ def submit():
     renderer.graphicsSettings.frequencyDomainParameters.max_db_power = get_box_number(max_db_variable)
     set_resolution(renderer, resolution.get())
 
-    renderer.create_plot_from_data(outputFileName=out_file.get(), channel_number=0, tk_progress_bar=progress_object)
+    renderer.create_animation_from_data(outputFileName=out_file.get(), channel_number=0, tk_progress_bar=progress_object)
     
     # destroy the box when done
     root.destroy()
