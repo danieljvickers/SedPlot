@@ -35,7 +35,6 @@ class DSADisplay:
     def __init__(self, inputFileName):
         self.eegData = EEGArray(inputFileName)
 
-
     # takes in frequency-domain data to compute the SEF80
     def calc_SEF_value(self, f, linear_data, num_frequency_points):
         y_in_sum = np.fft.ifftshift(linear_data)[:num_frequency_points]  # gets the section of the array that we will be summing
@@ -46,7 +45,7 @@ class DSADisplay:
 
 
     # main loop which renders the plots
-    def create_plot_from_data(self, outputFileName='', channel_number=0):
+    def create_plot_from_data(self, outputFileName='', channel_number=0, tk_progress_bar=None):
         if self.do_save_animation and outputFileName == '':
             raise ('Requested to save, but no output filename set.')
 
@@ -219,6 +218,10 @@ class DSADisplay:
                 os.remove('temp.mp4')
                 os.remove('temp.wav')
             else:
-                with tqdm(total=total_frames, desc='Saving video') as progress_bar:
-                    ani.save(outputFileName, writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=lambda i, n: progress_bar.update(1))
+                if not tk_progress_bar:  # uses tqdm if there is no external progress bar in the GUI
+                    with tqdm(total=total_frames, desc='Saving video') as progress_bar:
+                        ani.save(outputFileName, writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=lambda i, n: progress_bar.update(1))
+                else:
+                    tk_progress_bar.set_bar_max(total_frames)
+                    ani.save(outputFileName, writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=tk_progress_bar.update_bar)
         return

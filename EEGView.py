@@ -1,43 +1,138 @@
 import tkinter as tk
-from tkinter import messagebox
-from tkinter.filedialog import askopenfilename
+from tkinter import messagebox, ttk
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 import os
 
 from src.DSADisplay import DSADisplay
 
+TK_WIDTH = 75
+
 os.environ["IMAGEIO_FFMPEG_EXE"] = "/usr/bin/ffmpeg"
-input_file = "./bin/EEG_240505_084705.edf"
-# renderer = DSADisplay(input_file)
-# renderer.do_save_animation = True
-# renderer.create_plot_from_data(outputFileName="local.mp4", channel_number=0)
+
+class TkProgress:
+    def __init__(self, master, tk_progress_bar):
+        self.progress_bar = tk_progress_bar
+        self.master = master
+    
+    def set_bar_max(self, new_max):
+        self.progress_bar['maximum'] = new_max
+
+    def update_bar(self, i, n):
+        self.progress_bar['value'] = i
+        self.master.update_idletasks() # Force update of the GUI
+
+def get_box_number(tkValue):
+    try:
+        return int(tkValue.get())
+    except:
+        print("Could not get value. Returning default.")
+        return 0
+
 
 def submit():
+    # create the DSA display and fetch values
     renderer = DSADisplay(input_file.get())
     renderer.do_save_animation = True
-    renderer.create_plot_from_data(outputFileName="local.mp4", channel_number=0)
+    renderer.graphicsSettings.frequencyDomainParameters.min_db_power = get_box_number(min_db_variable)
+    renderer.graphicsSettings.frequencyDomainParameters.max_db_power = get_box_number(max_db_variable)
+    set_resolution(renderer, resolution.get())
+
+    renderer.create_plot_from_data(outputFileName=out_file.get(), channel_number=0, tk_progress_bar=progress_object)
+    
+    # destroy the box when done
     root.destroy()
 
 
-def browsefunc():
+def get_input_file():
     filename = askopenfilename(filetypes=(("edf file", "*.edf"), ("All files", "*.*"),))
     file_entry.insert(tk.END, filename) # add this
 
 
+def get_output_file():
+    file_path = asksaveasfilename(
+        defaultextension=".mp4",  # Default extension if none is provided by the user
+        filetypes=[
+            ("Video files", "*.mp4"),
+            ("GIF files", "*.gif"),
+            ("All files", "*.*")
+        ]
+    )
+    if file_path:  # Check if a file path was selected (not canceled)
+        out_label.config(text=file_path)
+    else:
+        out_label.config(text="File selection canceled.")
+        print("File selection canceled.")
+
+
+def set_resolution(render_object, resolution):
+    render_object.graphicsSettings.renderSettings.figure_size = (16, 9)
+    if resolution == "1920x1080":
+        render_object.graphicsSettings.renderSettings.dpi = 120
+    elif resolution == "2560x1440":
+        render_object.graphicsSettings.renderSettings.dpi = 160
+    elif resolution == "3840x2160":
+        render_object.graphicsSettings.renderSettings.dpi = 140
+
 #create root
+row_counter = 1
 root = tk.Tk()
 root.title("Generate Video")
 
 # input for the input file
-input_file = tk.StringVar()
+input_file = tk.StringVar(value='/home/dan/Documents/repos/spectrogram_generation/bin/EEG_240505_084705.edf')
 file_label = tk.Label(root, text='EDF File', font=('calibre', 10, 'bold'))
-file_button = tk.Button(root, text="Search", font=10, command=browsefunc)
-file_entry = tk.Entry(root, textvariable=input_file, font=10)
-file_label.grid(row=1, column=1)
-file_entry.grid(row=1, column=2)
-file_button.grid(row=1, column=3)
+file_button = tk.Button(root, text="Search", font=10, command=get_input_file)
+file_entry = tk.Entry(root, textvariable=input_file, font=10, width=TK_WIDTH)
+file_label.grid(row=row_counter, column=1)
+file_entry.grid(row=row_counter, column=2)
+file_button.grid(row=row_counter, column=3)
+row_counter += 1
 
-submit_button = tk.Button(root, text="Submit", command=submit)
-submit_button.grid(row=2, column=0,
+# min and max dB inputs
+min_db_variable = tk.StringVar(value='20')
+max_db_variable = tk.StringVar(value='65')
+min_db_entry = tk.Entry(root, textvariable=min_db_variable, width=TK_WIDTH)
+max_db_entry = tk.Entry(root, textvariable=max_db_variable, width=TK_WIDTH)
+min_db_label = tk.Label(root, text='Min dB', font=('calibre', 10, 'bold'))
+max_db_label = tk.Label(root, text='Max dB', font=('calibre', 10, 'bold'))
+min_db_label.grid(row=row_counter, column=1)
+min_db_entry.grid(row=row_counter, column=2)
+max_db_label.grid(row=row_counter+1, column=1)
+max_db_entry.grid(row=row_counter+1, column=2)
+row_counter += 2
+
+# input for the output file
+out_file = tk.StringVar(value='test.mp4')
+out_label = tk.Label(root, text='Output File', font=('calibre', 10, 'bold'))
+out_button = tk.Button(root, text="Select", font=10, command=get_output_file)
+out_entry = tk.Entry(root, textvariable=out_file, font=10, width=TK_WIDTH)
+out_label.grid(row=row_counter, column=1)
+out_entry.grid(row=row_counter, column=2)
+out_button.grid(row=row_counter, column=3)
+row_counter += 1
+
+# output resolution selection
+resolutions = ["1080p (1920x1080)", "2560x1440", "4K (3840x2160)"]
+resolution = tk.StringVar(root)
+resolution.set(resolutions[0])
+dropdown = tk.OptionMenu(root, resolution, *resolutions)
+dropdown_label = tk.Label(root, text='Output Resolution', font=('calibre', 10, 'bold'))
+dropdown_label.grid(row=row_counter, column=1)
+dropdown.grid(row=row_counter, column=2)
+row_counter += 1
+
+# The submission button to create the video
+submit_button = tk.Button(root, text="Generate", command=submit)
+submit_button.grid(row=row_counter, column=1,
                    columnspan=2, pady=10)
+row_counter += 1
+
+# Progress bar
+progress_bar = ttk.Progressbar(root, orient='horizontal', mode='determinate', length=TK_WIDTH*1.5)
+progress_object = TkProgress(root, progress_bar)
+progress_bar.grid(row=row_counter, column=2, columnspan=1, pady=10, sticky="ew")
+
+root.columnconfigure(2, minsize=TK_WIDTH)
+root.columnconfigure(2, weight=1)
 
 root.mainloop()
