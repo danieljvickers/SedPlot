@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
-from tkinter.filedialog import askopenfilename, asksaveasfilename
+from tkinter.filedialog import askopenfilenames, asksaveasfilename
 import os
 
 from src.DSADisplay import DSADisplay
@@ -44,8 +44,14 @@ def submit():
 
 
 def get_input_file():
-    filename = askopenfilename(filetypes=(("edf file", "*.edf"), ("All files", "*.*"),))
-    file_entry.insert(tk.END, filename) # add this
+    filename = askopenfilenames(title="Select EDF Case File(s)",
+                                filetypes=(("edf file", "*.edf"),("All files", "*.*")),
+                                multiple=True)
+    file_entry.delete(0, tk.END)
+    if filename:
+        for filepath in filename:
+            file_entry.insert(tk.END, filepath + ";") # Insert each file path, separated by a semicolo
+    # file_entry.insert(tk.END, filename) # add this
 
 
 def get_output_file():
