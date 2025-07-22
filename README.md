@@ -1,4 +1,4 @@
-# spectrogram-visualization
+# Spectral EEG View
 
 Repository for the visualization of data by the use of spectrograms. This code was designed specifically for the generation of spectrogram animations from EDF data and music data to aid in the understanding of visualizations of the SEDLine display.
 
@@ -6,7 +6,7 @@ Repository for the visualization of data by the use of spectrograms. This code w
 
 In order to use this library, import the module from the SignalDisplay directory and create a signal display module. You can then give it an input file name and run the display.
 
-```commandline
+```python
 from SignalDisplay import SignalDisplay
 
 sig_display = SignalDisplay()
@@ -16,7 +16,7 @@ sig_display.create_plot_from_data()
 
 The default setting is to show the animation in real-time and not save off the file. To generate a file with the audio attached, you will want to set an ouput file of `.mp4` type and tell the signal display object to attach the audio.
 
-```commandline
+```python
 from SignalDisplay import SignalDisplay
 
 sig_display = SignalDisplay()
