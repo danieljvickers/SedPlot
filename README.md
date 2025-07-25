@@ -1,10 +1,32 @@
 # Spectral EEG View
 
-Repository for the visualization of data by the use of spectrograms. This code was designed specifically for the generation of spectrogram animations from EDF data and music data to aid in the understanding of visualizations of the SEDLine display.
+Repository for the visualization of data by the use of spectrograms. This code was designed specifically for the generation of spectrogram animations from EDF data to aid in the understanding of visualizations of the interoperative EEG displays, particularly desinged basd upon the Masimo SedLine display.
 
-## Usage
+## Contents
 
-In order to use this library, import the module from the SignalDisplay directory and create a signal display module. You can then give it an input file name and run the display.
+1. [This is the link text](#downloading-eegview)
+
+## Downloading EEGView
+
+### Recommended For Physicians
+
+We provide a direct download of this library for Window, MacOS, and Linux (Ubuntu). If you only desire to have access to the plot generation via the GUI, we recommend that you download the binaries directly. You can find those binaries here:
+
+- Windows
+- MacOS
+- Linux (Ubuntu)
+
+Once the Windows and MacOS binaries are downloaded, they can immediately be run as a process. The Linux binaries are delivered as a `.zip` file and will first need to be unzipped. The library should work immediately. If this does not work for you or if you are on a non-supported operating system, you can install directly from the command line using the [Recommended for Developers](#recommended-for-developers) section below. Otherwise, you can contact the lead develpoper at dnlvickers5@gmail.com for software support.
+
+### Recommended for Developers
+
+TODO :: PUT IN COMMAND LINE INSTRUCTIONS FOR RUNNING THIS CODE
+
+## User Instructions
+
+### Using the GUI
+
+### Using via Python
 
 ```python
 from SignalDisplay import SignalDisplay
