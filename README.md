@@ -36,7 +36,7 @@ We provide a direct download of this library for Window, MacOS, and Linux (Ubunt
 - MacOS
 - Linux (Ubuntu)
 
-Once the Windows and MacOS binaries are downloaded, they can immediately be run as a process. The Linux binaries are delivered as a `.zip` file and will first need to be unzipped. The library should work immediately. If this does not work for you or if you are on a non-supported operating system, you can install directly from the command line using the [Recommended for Developers](#recommended-for-developers) section below. Otherwise, you can contact the lead develpoper at dnlvickers5@gmail.com for software support.
+Once the Windows and MacOS binaries are downloaded, they can immediately be run as a process. The Linux binaries are delivered as a `.zip` file and will first need to be unzipped. The library should work immediately. If this does not work for you or if you are on a non-supported operating system, you can install directly from the command line using the [Recommended for Developers](#recommended-for-developers) section below. Otherwise, you can contact the lead develpoper at `dnlvickers5@gmail`.com for software support.
 
 ### Recommended for Developers
 
@@ -73,11 +73,11 @@ Note that in order to attach the audio, the signal display object needs to creat
 
 ## Citing Works
 
-Below are a list of papers that used EEG view to render their graphics and animations. If you use this software in one of your papers, please cite us and send an email to the lead developer at `dnlickers5@gmail.com` to be added to this work.
+Below are a list of papers that used EEG view to render their graphics and animations. If you use this software in one of your papers, please cite us and send an email to the lead developer at `dnlvickers5@gmail.com` to be added to this section.
 
-```
-Barkley R, Vickers DJ, Binda DD, Ortega R. An Auditory Analogy for Electroencephalography Understanding: Video in Clinical Anesthesia. A A Pract. 2024 Dec 11;18(12):e01871. doi: 10.1213/XAA.0000000000001871. PMID: 39660749.
-```
+- Barkley R, Vickers DJ, Binda DD, Ortega R. An Auditory Analogy for Electroencephalography Understanding: Video in Clinical Anesthesia. A A Pract. 2024 Dec 11;18(12):e01871. doi: 10.1213/XAA.0000000000001871. PMID: 39660749.
+
+- Lambert Paper
 
 
 
