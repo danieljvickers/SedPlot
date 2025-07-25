@@ -4,7 +4,26 @@ Repository for the visualization of data by the use of spectrograms. This code w
 
 ## Contents
 
-1. [This is the link text](#downloading-eegview)
+1. [Citing this Software](#citing-this-software)
+1. [Downloading EEGView](#downloading-eegview)
+1. [User Instructions](#user-instructions)
+1. [Citing Works](#citing-works)
+
+
+## Citing this Software
+
+If you use this software in your academic publications please consider citing us. The information for the release publication can be found below:
+
+TODO :: PUT IN A HYPERLINK
+
+```
+MLM FORMAT
+```
+
+``BIBTEX FORMAT
+```
+
+If you cite us in your research, please consider sending an email to our lead developer at `dnlvickers5@gmail.com`. We would love to add you to the [Citing Works](#citing-works) section of this documentation.
 
 ## Downloading EEGView
 
@@ -50,6 +69,16 @@ sig_display.create_plot_from_data()
 ```
 
 Note that in order to attach the audio, the signal display object needs to create an intermediate file named `temp.mp4`. It will create this file in the execution directory, and will remove it after generation. If you have a file named `temp.mp4` in your directory, it will be overwritten and then deleted during execution of the plot generation when the `do_add_audio_to_animation` flag is set to `True`.
+
+## Citing Works
+
+Below are a list of papers that used EEG view to render their graphics and animations. If you use this software in one of your papers, please cite us and send an email to the lead developer at `dnlickers5@gmail.com` to be added to this work.
+
+```
+Barkley R, Vickers DJ, Binda DD, Ortega R. An Auditory Analogy for Electroencephalography Understanding: Video in Clinical Anesthesia. A A Pract. 2024 Dec 11;18(12):e01871. doi: 10.1213/XAA.0000000000001871. PMID: 39660749.
+```
+
+
 
 ## Customization
 
