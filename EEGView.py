@@ -2,8 +2,16 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 from tkinter.filedialog import askopenfilenames, asksaveasfilename
 import os
-
 from src.DSADisplay import DSADisplay
+import shutil
+import moviepy.config as mpy_config
+
+# Look for ffmpeg next to the executable or in system path
+local_ffmpeg = os.path.join(os.path.dirname(__file__), 'ffmpeg.exe' if os.name == 'nt' else 'ffmpeg')
+if os.path.exists(local_ffmpeg):
+    mpy_config.change_settings({"FFMPEG_BINARY": local_ffmpeg})
+elif shutil.which("ffmpeg") is None:
+    raise RuntimeError("FFmpeg not found. Please install or bundle it.")
 
 TK_WIDTH = 75
 
