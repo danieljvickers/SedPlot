@@ -20,7 +20,8 @@ TODO :: PUT IN A HYPERLINK
 MLM FORMAT
 ```
 
-``BIBTEX FORMAT
+```
+BIBTEX FORMAT
 ```
 
 If you cite us in your research, please consider sending an email to our lead developer at `dnlvickers5@gmail.com`. We would love to add you to the [Citing Works](#citing-works) section of this documentation.
