@@ -1,11 +1,17 @@
+# GUI Imports
 import tkinter as tk
 from tkinter import messagebox, ttk
 from tkinter.filedialog import askopenfilenames, asksaveasfilename
+
+# system importes
 import os
 import platform
 import sys
-from src.DSADisplay import DSADisplay
 import shutil
+
+# library imports
+from src.DSADisplay import DSADisplay
+
 
 # Find FFMPEG on the system or in the binaries
 ffmpeg_filename = 'ffmpeg'
@@ -23,6 +29,7 @@ else:
     raise RuntimeError("FFmpeg not found with executable or on system. Please install it and/or add it your path.")
 
 TK_WIDTH = 75
+
 
 class TkProgress:
     def __init__(self, master, tk_progress_bar):
@@ -44,7 +51,7 @@ def get_box_number(tkValue):
         return 0
 
 
-def submit():
+def submit_dsa():
     # create the DSA display and fetch values
     renderer = DSADisplay(input_file.get())
     renderer.do_save_animation = True
@@ -52,7 +59,9 @@ def submit():
     renderer.graphicsSettings.frequencyDomainParameters.max_db_power = get_box_number(max_db_variable)
     renderer.graphicsSettings.renderSettings.font_size = axis_font_var.get()
     renderer.graphicsSettings.renderSettings.tick_size = tick_font_var.get()
+    # TODO :: Fetch a particular slow_time starting/ending value
 
+    # graphs graphical resolutoin settings
     set_resolution(renderer, resolution.get())
     if do_sef_var.get():
         renderer.do_plot_spectral_edge_on_spectrogram = True
@@ -63,11 +72,19 @@ def submit():
     if do_time_domain_var.get():
         renderer.graphicsSettings.timeDomainParameters.do_time_domain_plot = True
 
+    # TODO :: Check the output file type and decide if you will render a video or image.
     renderer.create_animation_from_data(outputFileName=out_file.get(), channel_number=0, tk_progress_bar=progress_object)
     
     # destroy the box when done
     del renderer
-    # root.destroy()
+
+
+def submit_spectrogram():
+    # Empty for now, but I want it to generate 3D spectrogram videos
+    # Look at references/spectrogram_animation.py for what should be done
+    # TODO :: Fill all of this in with a new spectrogram object 
+    pass
+
 
 
 def quit_me():
@@ -84,7 +101,6 @@ def get_input_file():
     if filename:
         for filepath in filename:
             file_entry.insert(tk.END, filepath + ";") # Insert each file path, separated by a semicolo
-    # file_entry.insert(tk.END, filename) # add this
 
 
 def get_output_file():
@@ -127,6 +143,7 @@ root.protocol("WM_DELETE_WINDOW", quit_me)  # cleanup protocol for when the wind
 root.title("EEGView")
 
 # input for the input file
+# TODO :: Add help message boxes for every single input field that can be opened at run time
 input_file = tk.StringVar(value='/home/dan/Documents/repos/spectrogram_generation/bin/EEG_240505_084705.edf')
 file_label = tk.Label(root, text='EDF File', font=('calibre', 10, 'bold'))
 file_button = tk.Button(root, text="Search", font=10, command=get_input_file)
@@ -197,11 +214,14 @@ do_frequency_domain_checkbox.grid(row=row_counter, column=3)
 do_time_domain_checkbox.grid(row=row_counter + 1, column=1)
 row_counter += 2
 
-# The submission button to create the video
-submit_button = tk.Button(root, text="Generate", command=submit)
-submit_button.grid(row=row_counter, column=1,
+# The submission buttons
+dsa_button = tk.Button(root, text="Generate DSA", command=submit_dsa)
+dsa_button.grid(row=row_counter, column=1,
                    columnspan=3, pady=10, sticky="ew")
-row_counter += 1
+spectrogram_button = tk.Button(root, text="Generate 3D Spectrogram", command=submit_spectrogram)
+spectrogram_button.grid(row=row_counter+1, column=1,
+                   columnspan=3, pady=10, sticky="ew")
+row_counter += 2
 
 # Progress bar
 ttk.Style().configure("Custom.Horizontal.TProgressbar",
