@@ -1,11 +1,17 @@
+# GUI Imports
 import tkinter as tk
 from tkinter import messagebox, ttk
 from tkinter.filedialog import askopenfilenames, asksaveasfilename
+
+# system importes
 import os
 import platform
 import sys
-from src.DSADisplay import DSADisplay
 import shutil
+
+# library imports
+from src.DSADisplay import DSADisplay
+
 
 # Find FFMPEG on the system or in the binaries
 ffmpeg_filename = 'ffmpeg'
@@ -23,6 +29,7 @@ else:
     raise RuntimeError("FFmpeg not found with executable or on system. Please install it and/or add it your path.")
 
 TK_WIDTH = 75
+
 
 class TkProgress:
     def __init__(self, master, tk_progress_bar):
@@ -44,7 +51,7 @@ def get_box_number(tkValue):
         return 0
 
 
-def submit():
+def submit_dsa_animation():
     # create the DSA display and fetch values
     renderer = DSADisplay(input_file.get())
     renderer.do_save_animation = True
@@ -67,7 +74,21 @@ def submit():
     
     # destroy the box when done
     del renderer
-    # root.destroy()
+
+def submit_dsa_image():
+    # Empty button for now, but will eventually load the image generation function
+    # This needs to generate the same things as the video, but just a single pitcture.
+    pass
+
+def submit_3d_animation():
+    # Empty for now, but I want it to generate 3D spectrogram videos
+    # Look at references/spectrogram_animation.py for what should be done
+    pass
+
+def submit_3d_image():
+    # Empty for now, but I want it to generate 3D spectrogram images
+    # Look at references/spectrogram_image.py for what should be done
+    pass
 
 
 def quit_me():
@@ -84,7 +105,6 @@ def get_input_file():
     if filename:
         for filepath in filename:
             file_entry.insert(tk.END, filepath + ";") # Insert each file path, separated by a semicolo
-    # file_entry.insert(tk.END, filename) # add this
 
 
 def get_output_file():
@@ -197,9 +217,9 @@ do_frequency_domain_checkbox.grid(row=row_counter, column=3)
 do_time_domain_checkbox.grid(row=row_counter + 1, column=1)
 row_counter += 2
 
-# The submission button to create the video
-submit_button = tk.Button(root, text="Generate", command=submit)
-submit_button.grid(row=row_counter, column=1,
+# The submission buttons
+dsa_video_button = tk.Button(root, text="Generate", command=submit_dsa_animation)
+dsa_video_button.grid(row=row_counter, column=1,
                    columnspan=3, pady=10, sticky="ew")
 row_counter += 1
 
