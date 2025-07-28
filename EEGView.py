@@ -14,22 +14,12 @@ from matplotlib import animation
 ffmpeg_filename = 'ffmpeg'
 if platform.system() == 'Windows':
     ffmpeg_filename = ffmpeg_filename + '.exe'
+local_ffmpeg = None
 # Look for ffmpeg next to the executable or in system path
 if hasattr(sys, '_MEIPASS'):  # This is true if you installed the binaries
     local_ffmpeg = os.path.join(sys._MEIPASS, 'ffmpeg', 'bin', ffmpeg_filename)
     if platform.system() == "Windows":
         local_ffmpeg = os.path.join(sys._MEIPASS, 'ffmpeg', 'ffmpeg-7.1.1-essentials_build', 'bin', ffmpeg_filename)
-    print("MEIPASS =", sys._MEIPASS)
-    print("Trying to run ffmpeg at:", local_ffmpeg)
-    print("FFmpeg exists:", os.path.isfile(local_ffmpeg))
-    print("PATH:", os.environ["PATH"])
-
-    for root, dirs, files in os.walk("sys._MEIPASS", topdown=False):
-        for name in files:
-            print(os.path.join(root, name))
-        for name in dirs:
-            print(os.path.join(root, name))
-    
     os.environ["FFMPEG_BINARY"] = local_ffmpeg
     os.environ["IMAGEIO_FFMPEG_EXE"] = local_ffmpeg
     animation.FFMpegWriter.exec_path = local_ffmpeg
@@ -80,7 +70,7 @@ def submit():
     if do_time_domain_var.get():
         renderer.graphicsSettings.timeDomainParameters.do_time_domain_plot = True
 
-    renderer.create_animation_from_data(outputFileName=out_file.get(), channel_number=0, tk_progress_bar=progress_object)
+    renderer.create_animation_from_data(outputFileName=out_file.get(), channel_number=0, tk_progress_bar=progress_object, ffmpeg_path=local_ffmpeg)
     
     # destroy the box when done
     del renderer

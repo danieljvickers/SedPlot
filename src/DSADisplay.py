@@ -45,7 +45,7 @@ class DSADisplay:
 
 
     # main loop which renders the plots
-    def create_animation_from_data(self, outputFileName='', channel_number=0, tk_progress_bar=None):
+    def create_animation_from_data(self, outputFileName='', channel_number=0, tk_progress_bar=None, ffmpeg_path=None):
         if self.do_save_animation and outputFileName == '':
             raise ('Requested to save, but no output filename set.')
 
@@ -204,6 +204,8 @@ class DSADisplay:
                 writer = animation.PillowWriter(fps=self.graphicsSettings.renderSettings.fps, metadata=dict(artist='Daniel J. Vickers'), bitrate=-1)
             elif file_ending == 'mp4':
                 writer = animation.FFMpegWriter(fps=self.graphicsSettings.renderSettings.fps) #, extra_args=['-vcodec', 'libx264'])
+                if ffmpeg_path:
+                    writer.exec_path = ffmpeg_path
             else:
                 print('ERROR: ' + file_ending + ' is not a valid output file format')
                 return
