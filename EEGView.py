@@ -17,13 +17,14 @@ if platform.system() == 'Windows':
 # Look for ffmpeg next to the executable or in system path
 if hasattr(sys, '_MEIPASS'):  # This is true if you installed the binaries
     local_ffmpeg = os.path.join(sys._MEIPASS, 'ffmpeg', 'bin', ffmpeg_filename)
-
+    if platform.system() == "Windows":
+        local_ffmpeg = os.path.join(sys._MEIPASS, 'ffmpeg', 'ffmpeg-7.1.1-essentials_build', 'bin', ffmpeg_filename)
     print("MEIPASS =", sys._MEIPASS)
     print("Trying to run ffmpeg at:", local_ffmpeg)
     print("FFmpeg exists:", os.path.isfile(local_ffmpeg))
     print("PATH:", os.environ["PATH"])
 
-    for root, dirs, files in os.walk(".", topdown=False):
+    for root, dirs, files in os.walk("sys._MEIPASS", topdown=False):
         for name in files:
             print(os.path.join(root, name))
         for name in dirs:
