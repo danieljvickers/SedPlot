@@ -6,7 +6,6 @@ import platform
 import sys
 from src.DSADisplay import DSADisplay
 import shutil
-import moviepy.config as mpy_config
 
 # Find FFMPEG on the system or in the binaries
 ffmpeg_filename = 'ffmpeg'
@@ -15,7 +14,7 @@ if platform.system() == 'Windows':
 # Look for ffmpeg next to the executable or in system path
 if hasattr(sys, '_MEIPASS'):  # This is true if you installed the binaries
     local_ffmpeg = os.path.join(sys._MEIPASS, 'ffmpeg/bin/' + ffmpeg_filename)
-    mpy_config.change_settings({"FFMPEG_BINARY": local_ffmpeg})
+    os.environ["FFMPEG_BINARY"] = local_ffmpeg
     os.environ["IMAGEIO_FFMPEG_EXE"] = local_ffmpeg
 elif shutil.which("ffmpeg") is not None:  # this is true if it is installed on your host machine
     print("Using Local FFMPEG")
