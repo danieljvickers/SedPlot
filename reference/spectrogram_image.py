@@ -12,6 +12,11 @@ from stl import mesh
 
 from get_data import get_data
 
+'''
+CREATES A 3D ARRAY OF THE DATA AS A SPECTROGRAM AND
+GENERATES AN IMAGE FROM A SPECIFIC VIEW ANGLE.
+'''
+
 
 def main():
     file_name = 'data/EEG_240505_084705.edf'

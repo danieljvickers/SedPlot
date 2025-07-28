@@ -11,6 +11,12 @@ from scipy import ndimage
 
 from get_data import get_data
 
+'''
+GENERATES A SPECTROGRAM ANIMATION. RENDERES A 3D ARRAY OF
+THE DATA, COLORS IT, AND CRTEATES A GIF WATCHING FROM MANY
+DIFFERENT ANGLES
+'''
+
 script = [
     {
         "function":"rotate",

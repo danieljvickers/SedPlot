@@ -7,6 +7,10 @@ import math
 from matplotlib import cm
 from matplotlib import colors
 
+'''
+THE OUTPUT OF THIS FILE IS A COLORED FOURIER TRANSFORM, WHICH I WOULD LIKE TO HAVE ADDED TO THE DSA SPLIT IMAGE
+'''
+
 def interpolate_signal(sig, rate):
     f_sig = np.fft.fft(sig)
     f_out = np.zeros(int(len(f_sig) * rate), dtype=complex)

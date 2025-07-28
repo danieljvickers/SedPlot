@@ -12,6 +12,12 @@ from stl import mesh
 
 from get_data import get_data
 
+'''
+THIS OUTPUTS AN STL FILE, WHICH CAN BE USED FOR CAD MODELING.
+THE GET_DATA FUNCTION MUST BE REPLACED WITH OUR OWN DATA STRUCTURE
+CONSISTENT WITH THE REST OF THE CODE.
+'''
+
 
 def main():
     file_name = 'data/EEG_240505_084705.edf'
