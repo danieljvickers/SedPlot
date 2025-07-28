@@ -2,20 +2,28 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 from tkinter.filedialog import askopenfilenames, asksaveasfilename
 import os
+import platform
+import sys
 from src.DSADisplay import DSADisplay
 import shutil
 import moviepy.config as mpy_config
 
+# Find FFMPEG on the system or in the binaries
+ffmpeg_filename = 'ffmpeg'
+if platform.system() == 'Windows':
+    ffmpeg_filename = ffmpeg_filename + '.exe'
 # Look for ffmpeg next to the executable or in system path
-local_ffmpeg = os.path.join(os.path.dirname(__file__), 'ffmpeg.exe' if os.name == 'nt' else 'ffmpeg')
-if os.path.exists(local_ffmpeg):
+if hasattr(sys, '_MEIPASS'):  # This is true if you installed the binaries
+    local_ffmpeg = os.path.join(sys._MEIPASS, 'ffmpeg/bin/' + ffmpeg_filename)
     mpy_config.change_settings({"FFMPEG_BINARY": local_ffmpeg})
-elif shutil.which("ffmpeg") is None:
-    raise RuntimeError("FFmpeg not found. Please install or bundle it.")
+    os.environ["IMAGEIO_FFMPEG_EXE"] = local_ffmpeg
+elif shutil.which("ffmpeg") is not None:  # this is true if it is installed on your host machine
+    print("Using Local FFMPEG")
+    os.environ["IMAGEIO_FFMPEG_EXE"] = shutil.which("ffmpeg")
+else:
+    raise RuntimeError("FFmpeg not found with executable or on system. Please install it and/or add it your path.")
 
 TK_WIDTH = 75
-
-os.environ["IMAGEIO_FFMPEG_EXE"] = "/usr/bin/ffmpeg"
 
 class TkProgress:
     def __init__(self, master, tk_progress_bar):
@@ -116,8 +124,8 @@ def set_resolution(render_object, resolution):
 #create root
 row_counter = 1
 root = tk.Tk()
-root.protocol("WM_DELETE_WINDOW", quit_me)
-root.title("Generate Video")
+root.protocol("WM_DELETE_WINDOW", quit_me)  # cleanup protocol for when the window is closed
+root.title("EEGView")
 
 # input for the input file
 input_file = tk.StringVar(value='/home/dan/Documents/repos/spectrogram_generation/bin/EEG_240505_084705.edf')
