@@ -1,0 +1,64 @@
+name: Build Binaries with FFmpeg
+
+on:
+  push:
+    tags:
+      - 'v*'  # Builds on version tags like v1.0
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install -r requirements.txt
+
+      - name: Download FFmpeg
+        shell: bash
+        run: |
+          mkdir -p ffmpeg
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            curl -L -o ffmpeg.zip https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip
+            unzip ffmpeg.zip -d ffmpeg
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            curl -L -o ffmpeg.zip https://evermeet.cx/ffmpeg/getrelease/zip
+            unzip ffmpeg.zip -d ffmpeg
+            cp ffmpeg/ffmpeg /usr/local/bin/ffmpeg
+            chmod +x /usr/local/bin/ffmpeg
+          elif [[ "$RUNNER_OS" == "Linux" ]]; then
+            curl -L -o ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
+            tar -xf ffmpeg.tar.xz --strip-components=1 -C ffmpeg
+          fi
+
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller --noconfirm --onefile --windowed --add-data "./ffmpeg/*:./ffmpeg/" EEGView.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }}-binary
+          path: dist/*
+
+#      - name: Upload to GitHub Release
+#        if: startsWith(github.ref, 'refs/tags/')
+#        uses: softprops/action-gh-release@v2
+#        with:
+#          files: dist/*
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
