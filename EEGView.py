@@ -18,12 +18,11 @@ if platform.system() == 'Windows':
 if hasattr(sys, '_MEIPASS'):  # This is true if you installed the binaries
     local_ffmpeg = os.path.join(sys._MEIPASS, 'ffmpeg', 'bin', ffmpeg_filename)
 
+    print("MEIPASS =", sys._MEIPASS)
     print("Trying to run ffmpeg at:", local_ffmpeg)
     print("FFmpeg exists:", os.path.isfile(local_ffmpeg))
     print("PATH:", os.environ["PATH"])
-    subprocess.run([local_ffmpeg, "-version"], check=True)  # This should print version info or crash
-
-    assert os.path.isfile(local_ffmpeg), f"FFmpeg binary not found at: {local_ffmpeg}"
+    
     os.environ["FFMPEG_BINARY"] = local_ffmpeg
     os.environ["IMAGEIO_FFMPEG_EXE"] = local_ffmpeg
     animation.FFMpegWriter.exec_path = local_ffmpeg

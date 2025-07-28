@@ -50,7 +50,7 @@ jobs:
         shell: bash
         run: |
           if [[ "$RUNNER_OS" == "Windows" ]]; then
-            pyinstaller --noconfirm --onefile --add-data "./ffmpeg/*;./ffmpeg/" EEGView.py
+            pyinstaller EEGView.py --noconfirm --onefile --add-data "./ffmpeg/*:./ffmpeg/"
           else
             pyinstaller --noconfirm --onefile --add-data "./ffmpeg/*:./ffmpeg/" EEGView.py
           fi
