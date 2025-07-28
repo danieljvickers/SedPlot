@@ -51,7 +51,7 @@ def get_box_number(tkValue):
         return 0
 
 
-def submit_dsa_animation():
+def submit_dsa():
     # create the DSA display and fetch values
     renderer = DSADisplay(input_file.get())
     renderer.do_save_animation = True
@@ -59,7 +59,9 @@ def submit_dsa_animation():
     renderer.graphicsSettings.frequencyDomainParameters.max_db_power = get_box_number(max_db_variable)
     renderer.graphicsSettings.renderSettings.font_size = axis_font_var.get()
     renderer.graphicsSettings.renderSettings.tick_size = tick_font_var.get()
+    # TODO :: Fetch a particular slow_time starting/ending value
 
+    # graphs graphical resolutoin settings
     set_resolution(renderer, resolution.get())
     if do_sef_var.get():
         renderer.do_plot_spectral_edge_on_spectrogram = True
@@ -70,25 +72,19 @@ def submit_dsa_animation():
     if do_time_domain_var.get():
         renderer.graphicsSettings.timeDomainParameters.do_time_domain_plot = True
 
+    # TODO :: Check the output file type and decide if you will render a video or image.
     renderer.create_animation_from_data(outputFileName=out_file.get(), channel_number=0, tk_progress_bar=progress_object)
     
     # destroy the box when done
     del renderer
 
-def submit_dsa_image():
-    # Empty button for now, but will eventually load the image generation function
-    # This needs to generate the same things as the video, but just a single pitcture.
-    pass
 
-def submit_3d_animation():
+def submit_spectrogram():
     # Empty for now, but I want it to generate 3D spectrogram videos
     # Look at references/spectrogram_animation.py for what should be done
+    # TODO :: Fill all of this in with a new spectrogram object 
     pass
 
-def submit_3d_image():
-    # Empty for now, but I want it to generate 3D spectrogram images
-    # Look at references/spectrogram_image.py for what should be done
-    pass
 
 
 def quit_me():
@@ -147,6 +143,7 @@ root.protocol("WM_DELETE_WINDOW", quit_me)  # cleanup protocol for when the wind
 root.title("EEGView")
 
 # input for the input file
+# TODO :: Add help message boxes for every single input field that can be opened at run time
 input_file = tk.StringVar(value='/home/dan/Documents/repos/spectrogram_generation/bin/EEG_240505_084705.edf')
 file_label = tk.Label(root, text='EDF File', font=('calibre', 10, 'bold'))
 file_button = tk.Button(root, text="Search", font=10, command=get_input_file)
@@ -218,10 +215,13 @@ do_time_domain_checkbox.grid(row=row_counter + 1, column=1)
 row_counter += 2
 
 # The submission buttons
-dsa_video_button = tk.Button(root, text="Generate", command=submit_dsa_animation)
-dsa_video_button.grid(row=row_counter, column=1,
+dsa_button = tk.Button(root, text="Generate DSA", command=submit_dsa)
+dsa_button.grid(row=row_counter, column=1,
                    columnspan=3, pady=10, sticky="ew")
-row_counter += 1
+spectrogram_button = tk.Button(root, text="Generate 3D Spectrogram", command=submit_spectrogram)
+spectrogram_button.grid(row=row_counter+1, column=1,
+                   columnspan=3, pady=10, sticky="ew")
+row_counter += 2
 
 # Progress bar
 ttk.Style().configure("Custom.Horizontal.TProgressbar",
