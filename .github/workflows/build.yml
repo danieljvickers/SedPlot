@@ -48,7 +48,7 @@ jobs:
 
       - name: Build with PyInstaller
         run: |
-          pyinstaller --noconfirm --onefile --windowed --add-data "./ffmpeg/*;./ffmpeg/" EEGView.py
+          pyinstaller --noconfirm --onefile --windowed --add-data "./ffmpeg/*:./ffmpeg/" EEGView.py
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
