@@ -47,6 +47,7 @@ jobs:
           fi
 
       - name: Build with PyInstaller
+        shell: bash
         run: |
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             pyinstaller --noconfirm --onefile --add-data "./ffmpeg/*;./ffmpeg/" EEGView.py
