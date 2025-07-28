@@ -22,6 +22,12 @@ if hasattr(sys, '_MEIPASS'):  # This is true if you installed the binaries
     print("Trying to run ffmpeg at:", local_ffmpeg)
     print("FFmpeg exists:", os.path.isfile(local_ffmpeg))
     print("PATH:", os.environ["PATH"])
+
+    for root, dirs, files in os.walk(".", topdown=False):
+        for name in files:
+            print(os.path.join(root, name))
+        for name in dirs:
+            print(os.path.join(root, name))
     
     os.environ["FFMPEG_BINARY"] = local_ffmpeg
     os.environ["IMAGEIO_FFMPEG_EXE"] = local_ffmpeg
