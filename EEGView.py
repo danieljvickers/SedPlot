@@ -27,6 +27,8 @@ if hasattr(sys, '_MEIPASS'):  # This is true if you installed the binaries
     # do a platform specific search for the ffmpeg executable
     if platform.system() == "Windows":
         local_ffmpeg = os.path.join(sys._MEIPASS, 'ffmpeg', 'ffmpeg-7.1.1-essentials_build', 'bin', ffmpeg_filename)
+    elif platform.system() == "Darwin": # MacOS
+        local_ffmpeg = os.path.join(sys._MEIPASS, 'ffmpeg', ffmpeg_filename)
     else:
         local_ffmpeg = os.path.join(sys._MEIPASS, 'ffmpeg', 'bin', ffmpeg_filename)
 
