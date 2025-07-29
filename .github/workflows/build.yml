@@ -46,8 +46,14 @@ jobs:
           fi
 
       - name: Build with PyInstaller
+        shell: bash
         run: |
-          pyinstaller --noconfirm --onefile --windowed --add-data "./ffmpeg/*:./ffmpeg/" EEGView.py
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            pyinstaller EEGView.py --noconfirm --onefile --add-data "ffmpeg;ffmpeg"
+          else
+            pyinstaller EEGView.py --noconfirm --onefile --add-data "ffmpeg:ffmpeg"
+          fi
+
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

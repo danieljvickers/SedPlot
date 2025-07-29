@@ -45,7 +45,7 @@ class DSADisplay:
 
 
     # main loop which renders the plots
-    def create_animation_from_data(self, outputFileName='', channel_number=0, tk_progress_bar=None):
+    def create_animation_from_data(self, outputFileName='', channel_number=0, tk_progress_bar=None, ffmpeg_path=None):
         if self.do_save_animation and outputFileName == '':
             raise ('Requested to save, but no output filename set.')
 
@@ -199,7 +199,7 @@ class DSADisplay:
             plt.show()
         else:
             file_ending = outputFileName.split('.')[-1]
-            writer = 0
+            writer = None
             if file_ending == 'gif':
                 writer = animation.PillowWriter(fps=self.graphicsSettings.renderSettings.fps, metadata=dict(artist='Daniel J. Vickers'), bitrate=-1)
             elif file_ending == 'mp4':
