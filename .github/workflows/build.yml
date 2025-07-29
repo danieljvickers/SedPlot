@@ -37,6 +37,7 @@ jobs:
             unzip ffmpeg.zip -d ffmpeg
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
             curl -L -o ffmpeg.zip https://evermeet.cx/ffmpeg/getrelease/zip
+            unzip ffmpeg.zip -d ffmpeg
             chmod +x ffmpeg/ffmpeg
           elif [[ "$RUNNER_OS" == "Linux" ]]; then
             curl -L -o ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
