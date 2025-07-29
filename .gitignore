@@ -6,3 +6,6 @@ env/*
 bin/*
 idea/*
 *.pyc
+ffmpeg/*
+dist/*
+*.spec

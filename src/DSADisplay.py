@@ -199,13 +199,11 @@ class DSADisplay:
             plt.show()
         else:
             file_ending = outputFileName.split('.')[-1]
-            writer = 0
+            writer = None
             if file_ending == 'gif':
                 writer = animation.PillowWriter(fps=self.graphicsSettings.renderSettings.fps, metadata=dict(artist='Daniel J. Vickers'), bitrate=-1)
             elif file_ending == 'mp4':
                 writer = animation.FFMpegWriter(fps=self.graphicsSettings.renderSettings.fps) #, extra_args=['-vcodec', 'libx264'])
-                if ffmpeg_path:
-                    writer.exec_path = ffmpeg_path
             else:
                 print('ERROR: ' + file_ending + ' is not a valid output file format')
                 return

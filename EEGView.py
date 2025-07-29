@@ -9,6 +9,7 @@ import shutil
 import subprocess
 
 from matplotlib import animation
+import matplotlib.pyplot as plt
 
 # Find FFMPEG on the system or in the binaries
 ffmpeg_filename = 'ffmpeg'
@@ -17,20 +18,26 @@ if platform.system() == 'Windows':
 local_ffmpeg = None
 # Look for ffmpeg next to the executable or in system path
 if hasattr(sys, '_MEIPASS'):  # This is true if you installed the binaries
-    local_ffmpeg = os.path.join(sys._MEIPASS, 'ffmpeg', 'bin', ffmpeg_filename)
+    # do a platform specific search for the ffmpeg executable
     if platform.system() == "Windows":
         local_ffmpeg = os.path.join(sys._MEIPASS, 'ffmpeg', 'ffmpeg-7.1.1-essentials_build', 'bin', ffmpeg_filename)
+    else:
+        local_ffmpeg = os.path.join(sys._MEIPASS, 'ffmpeg', 'bin', ffmpeg_filename)
+
+    # set various environment variables to ensure that the executable finds ffmpeg
     os.environ["FFMPEG_BINARY"] = local_ffmpeg
     os.environ["IMAGEIO_FFMPEG_EXE"] = local_ffmpeg
     animation.FFMpegWriter.exec_path = local_ffmpeg
+    plt.rcParams['animation.ffmpeg_path'] = local_ffmpeg
 elif shutil.which("ffmpeg") is not None:  # this is true if it is installed on your host machine
-    print("Using Local FFMPEG")
+    print("Unable to find FFmpeg in local repository. Defauling to installed ffmpeg")
     os.environ["IMAGEIO_FFMPEG_EXE"] = shutil.which("ffmpeg")
 else:
     raise RuntimeError("FFmpeg not found with executable or on system. Please install it and/or add it your path.")
 
 TK_WIDTH = 75
 
+# progress bar class for Tkinter which can be given to matplotlib and be updated
 class TkProgress:
     def __init__(self, master, tk_progress_bar):
         self.progress_bar = tk_progress_bar
