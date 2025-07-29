@@ -13,9 +13,11 @@ import subprocess
 from matplotlib import animation
 import matplotlib.pyplot as plt
 
-# library imports
-from src.DSADisplay import DSADisplay
-
+local_ffmpeg = 'ffmpeg/ffmpeg'
+os.environ["FFMPEG_BINARY"] = local_ffmpeg
+os.environ["IMAGEIO_FFMPEG_EXE"] = local_ffmpeg
+animation.FFMpegWriter.exec_path = local_ffmpeg
+plt.rcParams['animation.ffmpeg_path'] = local_ffmpeg
 
 # Find FFMPEG on the system or in the binaries
 ffmpeg_filename = 'ffmpeg'
@@ -37,11 +39,17 @@ if hasattr(sys, '_MEIPASS'):  # This is true if you installed the binaries
     os.environ["IMAGEIO_FFMPEG_EXE"] = local_ffmpeg
     animation.FFMpegWriter.exec_path = local_ffmpeg
     plt.rcParams['animation.ffmpeg_path'] = local_ffmpeg
+elif os.path.isfile(os.path.join('ffmpeg', ffmpeg_filename)):
+    local_ffmpeg = os.path.join('ffmpeg', ffmpeg_filename)
+    print(f"Using local ffmpeg at {local_ffmpeg}")
 elif shutil.which("ffmpeg") is not None:  # this is true if it is installed on your host machine
     print("Unable to find FFmpeg in local repository. Defauling to installed ffmpeg")
     os.environ["IMAGEIO_FFMPEG_EXE"] = shutil.which("ffmpeg")
 else:
     raise RuntimeError("FFmpeg not found with executable or on system. Please install it and/or add it your path.")
+
+# library imports after ffmpeg is found
+from src.DSADisplay import DSADisplay
 
 TK_WIDTH = 75
 
