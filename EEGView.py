@@ -41,7 +41,7 @@ if (not ffmpeg_location) and os.path.isdir('ffmpeg'):  # if this is not a binary
     if os.path.isfile(ffmpeg_location):
         print(f"INFO :: Found FFMPEG locally. Using FFMPEG at {ffmpeg_location}")
     else:
-        print(f"WARN :: Searched for FFMPEG at {ffmpeg_location} but found nothing. Searching globally.")
+        print(f"WARN :: Searched for FFMPEG at {ffmpeg_location} but found nothing. Searching globally...")
         ffmpeg_location = None  # reset the location
 
 if not ffmpeg_location:  # if ffmpeg is not local, fall back to the global ffmpeg installation
