@@ -59,7 +59,7 @@ All build systems require python to build and install this code. This applicatio
 Install python and ensure that it is accessible via the command line with `py --version`. We recommend building with a python virtual environment, which is shown below. FFMPEG is also required to run this code. We show how to download this code below. Navigate to the top directory of this repository before running and commands. The commands required to build are:
  
 ```bash
-    py -m venv env
+    py -m venv env  # creates the python virtual environment
     .\env\Scripts\activate. # this activates your virtual environment
     python -m pip install --upgrade pip
     python -m pip install pyinstaller  # use if you plan on installing this code as a binary
@@ -104,7 +104,6 @@ To build the binary yourself, you will need to get a local ffmpeg and build the 
 These commands a specificly developed for Ubuntu, and may require modification for other Linux distributions. Pay perticular attention to the FFMPEG source on other distributions. Install python and ensure that it is accessible via the command line with `python3 --version`. We recommend building with a python virtual environment, which is shown below. FFMPEG is also required to run this code. We show how to download this code below. Navigate to the top directory of this repository before running and commands. The commands required to build are:
  
 ```bash
-    # set up the python virtual environment
     python3 -m venv env. # build the virtual environment
     source /env/bin/activate  # activate your virtual environment
     python -m pip install --upgrade pip
