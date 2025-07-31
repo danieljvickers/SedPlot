@@ -143,9 +143,9 @@ def get_output_file():
         ]
     )
     if file_path:  # Check if a file path was selected (not canceled)
-        out_label.config(text=file_path)
+        file_entry.delete(0, tk.END)
+        out_entry.insert(tk.END, file_path)
     else:
-        out_label.config(text="File selection canceled.")
         print("File selection canceled.")
 
 
@@ -174,7 +174,7 @@ root.title("EEGView")
 
 # input for the input file
 # TODO :: Add help message boxes for every single input field that can be opened at run time
-input_file = tk.StringVar(value='/home/dan/Documents/repos/spectrogram_generation/bin/EEG_240505_084705.edf')
+input_file = tk.StringVar(value='')
 file_label = tk.Label(root, text='EDF File', font=('calibre', 10, 'bold'))
 file_button = tk.Button(root, text="Search", font=10, command=get_input_file)
 file_entry = tk.Entry(root, textvariable=input_file, font=10, width=TK_WIDTH)
@@ -210,7 +210,7 @@ tick_font_entry.grid(row=row_counter+1, column=2)
 row_counter += 2
 
 # input for the output file
-out_file = tk.StringVar(value='test.mp4')
+out_file = tk.StringVar(value='')
 out_label = tk.Label(root, text='Output File', font=('calibre', 10, 'bold'))
 out_button = tk.Button(root, text="Select", font=10, command=get_output_file)
 out_entry = tk.Entry(root, textvariable=out_file, font=10, width=TK_WIDTH)
