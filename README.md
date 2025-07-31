@@ -56,54 +56,46 @@ All build systems require python to build and install this code. This applicatio
 
 #### Windows
 
-Install python and ensure that it is accessible via the command line with `py`. We recommend building with a python virtual environment, which is shown below. FFMPEG is also required to run this code. We show how to download this code below. Navigate to the top directory of this repository before running and commands. The commands required to build are:
+Install python and ensure that it is accessible via the command line with `py --version`. We recommend building with a python virtual environment, which is shown below. FFMPEG is also required to run this code. We show how to download this code below. Navigate to the top directory of this repository before running and commands. The commands required to build are:
  
-```shell
-    # set up the python virtual environment
+```bash
     py -m venv env
     .\env\Scripts\activate. # this activates your virtual environment
     python -m pip install --upgrade pip
     python -m pip install pyinstaller  # use if you plan on installing this code as a binary
     python -m pip install -r requirements.txt
 
-    # download and install FFMPEG
     curl -L -o ffmpeg.zip https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip
     unzip ffmpeg.zip -d ffmpeg
-    set FFMPEG_BINARY="<path_to_this_repo>\ffmpeg\ffmpeg-7.1.1-essentials_build\bin\ffmpeg.exe"
-    set IMAGEIO_FFMPEG_EXE="<path_to_this_repo>\ffmpeg\ffmpeg-7.1.1-essentials_build\bin\ffmpeg.exe"
-
-    # run the code from the command line to test before installing
-    python EEGView.py
-
-    # create the binary, which will be output in the dist directory
-    pyinstaller EEGView.py --noconfirm --onefile --add-data "ffmpeg:ffmpeg"
 ```
+
+The code can be run directly from the terminal with `python EEGView.py` or installed as a binary into the `dist` directory with `pyinstaller EEGView.py --noconfirm --onefile --add-data "ffmpeg:ffmpeg"`.
 
 #### MacOS
 
-Install python and ensure that it is accessible via the command line with `python3`. We recommend building with a python virtual environment, which is shown below. FFMPEG is also required to run this code. We show how to download this code below. Navigate to the top directory of this repository before running and commands. The commands required to build are:
+Install python and ensure that it is accessible via the command line with `python3 --version`. We recommend building with a python virtual environment, which is shown below. FFMPEG is also required to run this code. We show how to download this code below. Navigate to the top directory of this repository before running and commands. First you must build the python virtual environment and install all of the dependencies:
  
 ```bash
-    # install tkinter backend BEFORE creating the virtual environment
     brew install python-tk
-
-    # set up the python virtual environment
     python3 -m venv env
-    source /env/bin/activate  # this activates your virtual environment
+    source /env/bin/activate 
     python -m pip install --upgrade pip
-    python -m pip install pyinstaller  # use if you plan on installing this code as a binary
+    python -m pip install pyinstaller
     python -m pip install -r requirements.txt
+```
 
-    # download and install FFMPEG
+You will then have two options. If you want to run locally via python it is easiest to install FFMPEG with `brew` and then run the GUI. You can do that by:
+
+```bash
+    brew install ffmpeg
+    python EEGView.py
+```
+
+To build the binary yourself, you will need to get a local ffmpeg and build the binary in the `dist` directory like so:
+
+```bash
     curl -L -o ffmpeg.zip https://evermeet.cx/ffmpeg/getrelease/zip
     unzip ffmpeg.zip -d ffmpeg
-    export FFMPEG_BINARY="<path_to_this_repo>/ffmpeg"
-    export IMAGEIO_FFMPEG_EXE="<path_to_this_repo>/ffmpeg"
-
-    # run the code from the command line to test before installing
-    python EEGView.py
-
-    # create the binary, which will be output in the dist directory
     pyinstaller EEGView.py --noconfirm --onefile --add-data "ffmpeg:ffmpeg"
 ```
 
@@ -118,17 +110,21 @@ These commands a specificly developed for Ubuntu, and may require modification f
     python -m pip install --upgrade pip
     python -m pip install pyinstaller  # use if you plan on installing this code as a binary
     python -m pip install -r requirements.txt
+```
 
-    # download and install FFMPEG
+From here, you can either run it from the command line with python or install the binaries into the `dist` directory. To run directly from python it is esiest to install ffmpeg with `apt`. Do so via:
+
+```bash
+    sudo apt install ffmpeg
+    python EEGView.py
+```
+
+To build the binary yourself, you will need to get a local ffmpeg and build the binary in the `dist` directory like so:
+
+```bash
     curl -L -o ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
     tar -xf ffmpeg.tar.xz --strip-components=1 -C ffmpeg
-    export FFMPEG_BINARY="<path_to_this_repo>/bin/ffmpeg"
-    export IMAGEIO_FFMPEG_EXE="<path_to_this_repo>/bin/ffmpeg"
 
-    # run the code from the command line to test before installing
-    python EEGView.py
-
-    # create the binary, which will be output in the dist directory
     pyinstaller EEGView.py --noconfirm --onefile --add-data "ffmpeg;ffmpeg"
 ```
 
