@@ -3,11 +3,21 @@
 Repository for the visualization of data by the use of spectrograms. This code was designed specifically for the generation of spectrogram animations from EDF data to aid in the understanding of visualizations of the interoperative EEG displays, particularly desinged basd upon the Masimo SedLine display.
 
 ## Contents
-
+1. [Features](#features)
 1. [Citing this Software](#citing-this-software)
 1. [Downloading EEGView](#downloading-eegview)
 1. [User Instructions](#user-instructions)
 1. [Citing Works](#citing-works)
+
+## Featrues
+
+This application is capable of parsing EDF files, which is the native format from most interoperative EEG monitors. If multiple EDF files are provided, it will automatically sort these files and generate longer case files before rendering. It can use that data to generate several different graphics and animation. The outputs include:
+
+- Still images of the EEG DSA (2D spectrogram), selected at particular times of a case. Outputs include PNG, JPG, PDF, and SVG.
+- Animations of the DSA for full cases. Outputs include MP4 and GIF. The MP4 outputs can be sonicated.
+- Still images of the 3D spectrogram, selected at particular times of a case. Outputs include PNG, JPG, PDF, and SVG.
+- Rotating animations of the 3D spectrogram, selected at particlar times of a case. Outputs include MP4 and GIF.
+- CAD models of the 3D spectrogram, exported to STL format. This file is capable of being opened in any 3D rendering software.
 
 
 ## Citing this Software
@@ -17,11 +27,11 @@ If you use this software in your academic publications please consider citing us
 TODO :: PUT IN A HYPERLINK
 
 ```
-MLM FORMAT
+TODO :: MLM FORMAT
 ```
 
 ```
-BIBTEX FORMAT
+TODO :: BIBTEX FORMAT
 ```
 
 If you cite us in your research, please consider sending an email to our lead developer at `dnlvickers5@gmail.com`. We would love to add you to the [Citing Works](#citing-works) section of this documentation.
@@ -36,17 +46,100 @@ We provide a direct download of this library for Window, MacOS, and Linux (Ubunt
 - MacOS
 - Linux (Ubuntu)
 
-Once the Windows and MacOS binaries are downloaded, they can immediately be run as a process. The Linux binaries are delivered as a `.zip` file and will first need to be unzipped. The library should work immediately. If this does not work for you or if you are on a non-supported operating system, you can install directly from the command line using the [Recommended for Developers](#recommended-for-developers) section below. Otherwise, you can contact the lead develpoper at `dnlvickers5@gmail`.com for software support.
+Once the Windows and MacOS binaries are downloaded, they can immediately be run as a process. The Linux binaries are delivered as a `.zip` file and will first need to be unzipped. The library should work immediately. If this does not work for you or if you are on a non-supported operating system, you can install directly from the command line using the [Recommended for Developers](#recommended-for-developers) section below. Otherwise, you can contact the lead develpoper at `dnlvickers5@gmail.com` for software support.
 
 ### Recommended for Developers
 
-TODO :: PUT IN COMMAND LINE INSTRUCTIONS FOR RUNNING THIS CODE
+All build systems require python to build and install this code. This application requires a version of python 3.12 or newer. Ensure that python can be found via the command line with `py --version` on Windows, or `python3 --version` on MacOS and Linux. Easy building and installing of this code can follow the instructions in the `.github/workflows/build.yaml` file, or are repeated below for easy use:
+
+#### Windows
+
+Install python and ensure that it is accessible via the command line with `py`. We recommend building with a python virtual environment, which is shown below. FFMPEG is also required to run this code. We show how to download this code below. Navigate to the top directory of this repository before running and commands. The commands required to build are:
+ 
+```shell
+    # set up the python virtual environment
+    py -m venv env
+    .\env\Scripts\activate. # this activates your virtual environment
+    python -m pip install --upgrade pip
+    python -m pip install pyinstaller  # use if you plan on installing this code as a binary
+    python -m pip install -r requirements.txt
+
+    # download and install FFMPEG
+    curl -L -o ffmpeg.zip https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip
+    unzip ffmpeg.zip -d ffmpeg
+    set FFMPEG_BINARY="<path_to_this_repo>\ffmpeg\ffmpeg-7.1.1-essentials_build\bin\ffmpeg.exe"
+    set IMAGEIO_FFMPEG_EXE="<path_to_this_repo>\ffmpeg\ffmpeg-7.1.1-essentials_build\bin\ffmpeg.exe"
+
+    # run the code from the command line to test before installing
+    python EEGView.py
+
+    # create the binary, which will be output in the dist directory
+    pyinstaller EEGView.py --noconfirm --onefile --add-data "ffmpeg:ffmpeg"
+```
+
+#### MacOS
+
+Install python and ensure that it is accessible via the command line with `python3`. We recommend building with a python virtual environment, which is shown below. FFMPEG is also required to run this code. We show how to download this code below. Navigate to the top directory of this repository before running and commands. The commands required to build are:
+ 
+```bash
+    # install tkinter backend BEFORE creating the virtual environment
+    brew install python-tk
+
+    # set up the python virtual environment
+    python3 -m venv env
+    source /env/bin/activate  # this activates your virtual environment
+    python -m pip install --upgrade pip
+    python -m pip install pyinstaller  # use if you plan on installing this code as a binary
+    python -m pip install -r requirements.txt
+
+    # download and install FFMPEG
+    curl -L -o ffmpeg.zip https://evermeet.cx/ffmpeg/getrelease/zip
+    unzip ffmpeg.zip -d ffmpeg
+    export FFMPEG_BINARY="<path_to_this_repo>/ffmpeg"
+    export IMAGEIO_FFMPEG_EXE="<path_to_this_repo>/ffmpeg"
+
+    # run the code from the command line to test before installing
+    python EEGView.py
+
+    # create the binary, which will be output in the dist directory
+    pyinstaller EEGView.py --noconfirm --onefile --add-data "ffmpeg:ffmpeg"
+```
+
+#### Linux (Ubuntu)
+
+These commands a specificly developed for Ubuntu, and may require modification for other Linux distributions. Pay perticular attention to the FFMPEG source on other distributions. Install python and ensure that it is accessible via the command line with `python3`. We recommend building with a python virtual environment, which is shown below. FFMPEG is also required to run this code. We show how to download this code below. Navigate to the top directory of this repository before running and commands. The commands required to build are:
+ 
+```bash
+    # set up the python virtual environment
+    python3 -m venv env
+    source /env/bin/activate  # this activates your virtual environment
+    python -m pip install --upgrade pip
+    python -m pip install pyinstaller  # use if you plan on installing this code as a binary
+    python -m pip install -r requirements.txt
+
+    # download and install FFMPEG
+    curl -L -o ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
+    tar -xf ffmpeg.tar.xz --strip-components=1 -C ffmpeg
+    export FFMPEG_BINARY="<path_to_this_repo>/bin/ffmpeg"
+    export IMAGEIO_FFMPEG_EXE="<path_to_this_repo>/bin/ffmpeg"
+
+    # run the code from the command line to test before installing
+    python EEGView.py
+
+    # create the binary, which will be output in the dist directory
+    pyinstaller EEGView.py --noconfirm --onefile --add-data "ffmpeg;ffmpeg"
+```
 
 ## User Instructions
 
 ### Using the GUI
 
-### Using via Python
+TODO :: Put in a bunch of graphics and a discription of what all of the buttons do
+
+
+### Using from Python
+
+TODO :: Add instructions on how to use the code when everything is done
 
 ```python
 from SignalDisplay import SignalDisplay
