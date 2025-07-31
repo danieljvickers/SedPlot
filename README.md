@@ -1,6 +1,6 @@
 # Spectral EEG View
 
-Repository for the visualization of data by the use of spectrograms. This code was designed specifically for the generation of spectrogram animations from EDF data to aid in the understanding of visualizations of the interoperative EEG displays, particularly desinged basd upon the Masimo SedLine display.
+Repository for the visualization of data by the use of spectrograms. This code was designed specifically for the generation of spectrogram animations from EDF data to aid in the understanding of visualizations of the interoperative EEG displays. The development was initially focused on supporting the Masimo SedLine display.
 
 ## Contents
 1. [Features](#features)
@@ -8,6 +8,8 @@ Repository for the visualization of data by the use of spectrograms. This code w
 1. [Downloading EEGView](#downloading-eegview)
 1. [User Instructions](#user-instructions)
 1. [Citing Works](#citing-works)
+
+Also consider looking at our [Gallery](#gallery).  TODO :: Create a gallery page in the docs
 
 ## Featrues
 
@@ -171,7 +173,6 @@ Below are a list of papers that used EEG view to render their graphics and anima
 - Barkley R, Vickers DJ, Binda DD, Ortega R. An Auditory Analogy for Electroencephalography Understanding: Video in Clinical Anesthesia. A A Pract. 2024 Dec 11;18(12):e01871. doi: 10.1213/XAA.0000000000001871. PMID: 39660749.
 
 - Lambert Paper
-
 
 
 ## Customization
