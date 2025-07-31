@@ -13,40 +13,47 @@ import subprocess
 from matplotlib import animation
 import matplotlib.pyplot as plt
 
-local_ffmpeg = 'ffmpeg/ffmpeg'
-os.environ["FFMPEG_BINARY"] = local_ffmpeg
-os.environ["IMAGEIO_FFMPEG_EXE"] = local_ffmpeg
-animation.FFMpegWriter.exec_path = local_ffmpeg
-plt.rcParams['animation.ffmpeg_path'] = local_ffmpeg
-
-# Find FFMPEG on the system or in the binaries
-ffmpeg_filename = 'ffmpeg'
-if platform.system() == 'Windows':
-    ffmpeg_filename = ffmpeg_filename + '.exe'
-local_ffmpeg = None
-# Look for ffmpeg next to the executable or in system path
-if hasattr(sys, '_MEIPASS'):  # This is true if you installed the binaries
+# Look for ffmpeg next to the executable or in system path and store in ffmpeg_location
+ffmpeg_location = None
+if hasattr(sys, '_MEIPASS'):  # This is true if you installed as a binary
     # do a platform specific search for the ffmpeg executable
     if platform.system() == "Windows":
-        local_ffmpeg = os.path.join(sys._MEIPASS, 'ffmpeg', 'ffmpeg-7.1.1-essentials_build', 'bin', ffmpeg_filename)
+        ffmpeg_location = os.path.join(sys._MEIPASS, 'ffmpeg', 'ffmpeg-7.1.1-essentials_build', 'bin', 'ffmpeg.exe')
     elif platform.system() == "Darwin": # MacOS
-        local_ffmpeg = os.path.join(sys._MEIPASS, 'ffmpeg', ffmpeg_filename)
+        ffmpeg_location = os.path.join(sys._MEIPASS, 'ffmpeg', 'ffmpeg')
     else:
-        local_ffmpeg = os.path.join(sys._MEIPASS, 'ffmpeg', 'bin', ffmpeg_filename)
+        ffmpeg_location = os.path.join(sys._MEIPASS, 'ffmpeg', 'bin', 'ffmpeg')
 
     # set various environment variables to ensure that the executable finds ffmpeg
-    os.environ["FFMPEG_BINARY"] = local_ffmpeg
-    os.environ["IMAGEIO_FFMPEG_EXE"] = local_ffmpeg
-    animation.FFMpegWriter.exec_path = local_ffmpeg
-    plt.rcParams['animation.ffmpeg_path'] = local_ffmpeg
-elif os.path.isfile(os.path.join('ffmpeg', ffmpeg_filename)):
-    local_ffmpeg = os.path.join('ffmpeg', ffmpeg_filename)
-    print(f"Using local ffmpeg at {local_ffmpeg}")
-elif shutil.which("ffmpeg") is not None:  # this is true if it is installed on your host machine
-    print("Unable to find FFmpeg in local repository. Defauling to installed ffmpeg")
-    os.environ["IMAGEIO_FFMPEG_EXE"] = shutil.which("ffmpeg")
-else:
-    raise RuntimeError("FFmpeg not found with executable or on system. Please install it and/or add it your path.")
+    if not os.path.isfile(ffmpeg_location):  # if we find the file, use it
+        print(f"WARN :: FFMPEG was not installed in this binary. Searching for other FFMPEG installations...")
+        ffmpeg_location = None  # reset the location
+
+if (not ffmpeg_location) and os.path.isdir('ffmpeg'):  # if this is not a binary, and there is a local ffmpeg directory
+    if platform.system() == "Windows":
+        ffmpeg_location = os.path.join('ffmpeg', 'ffmpeg-7.1.1-essentials_build', 'bin', 'ffmpeg.exe')
+    elif platform.system() == "Darwin": # MacOS
+        ffmpeg_location = os.path.join('ffmpeg', 'ffmpeg')
+    else:
+        ffmpeg_location = os.path.join('ffmpeg', 'bin', 'ffmpeg')
+
+    # cofnirm this ffmpeg is valid
+    if os.path.isfile(ffmpeg_location):
+        print(f"INFO :: Found FFMPEG locally. Using FFMPEG at {ffmpeg_location}")
+    else:
+        print(f"WARN :: Searched for FFMPEG at {ffmpeg_location} but found nothing. Searching globally.")
+        ffmpeg_location = None  # reset the location
+
+if not ffmpeg_location:  # if ffmpeg is not local, fall back to the global ffmpeg installation
+    assert shutil.which("ffmpeg") is not None, "ERROR :: FFMPEG not found locally and is not installed. Install FFMPEG to resolve."  # if it wasn't found, rase an exception
+    ffmpeg_location = shutil.which("ffmpeg")  # sets the lcoation to the global installation
+    print(f"INFO :: Found FFMPEG globally. Using FFMPEG at {ffmpeg_location}")
+
+# set the environment and path veriables to where FFMPEG was found
+os.environ["FFMPEG_BINARY"] = ffmpeg_location
+os.environ["IMAGEIO_FFMPEG_EXE"] = ffmpeg_location
+animation.FFMpegWriter.exec_path = ffmpeg_location
+plt.rcParams['animation.ffmpeg_path'] = ffmpeg_location
 
 # library imports after ffmpeg is found
 from src.DSADisplay import DSADisplay
@@ -96,7 +103,7 @@ def submit_dsa():
         renderer.graphicsSettings.timeDomainParameters.do_time_domain_plot = True
 
     # TODO :: Check the output file type and decide if you will render a video or image.
-    renderer.create_animation_from_data(outputFileName=out_file.get(), channel_number=0, tk_progress_bar=progress_object, ffmpeg_path=local_ffmpeg)
+    renderer.create_animation_from_data(outputFileName=out_file.get(), channel_number=0, tk_progress_bar=progress_object)
     
     # destroy the box when done
     del renderer
