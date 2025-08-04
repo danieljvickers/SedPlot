@@ -175,7 +175,7 @@ def set_resolution(render_object, resolution):
         render_object.graphicsSettings.renderSettings.figure_size == (16, 12)
 
 
-#create root
+#create root and the upper file loading
 row_counter = 1
 root = tk.Tk()
 root.protocol("WM_DELETE_WINDOW", quit_me)  # cleanup protocol for when the window is closed
@@ -185,19 +185,19 @@ root.title("EEGView")
 # Input
 input_file = tk.StringVar(value='')
 file_label = tk.Label(root, text='EDF File', font=('calibre', 10, 'bold'))
-file_button = tk.Button(root, text="Search", font=10, command=get_input_file)
+file_button = tk.Button(root, text="Select Input", font=10, command=get_input_file)
 file_entry = tk.Entry(root, textvariable=input_file, state="readonly", font=10, width=TK_WIDTH)
-file_label.grid(row=0, column=1)
-file_entry.grid(row=0, column=2)
-file_button.grid(row=0, column=3)
+file_label.grid(row=0, column=0)
+file_entry.grid(row=0, column=1)
+file_button.grid(row=0, column=2)
 # output
 out_file = tk.StringVar(value='')
 out_label = tk.Label(root, text='Output File', font=('calibre', 10, 'bold'))
-out_button = tk.Button(root, text="Select", font=10, command=get_output_file)
+out_button = tk.Button(root, text="Select Output", font=10, command=get_output_file)
 out_entry = tk.Entry(root, textvariable=out_file, state="readonly", font=10, width=TK_WIDTH)
-out_label.grid(row=1, column=1)
-out_entry.grid(row=1, column=2)
-out_button.grid(row=1, column=3)
+out_label.grid(row=1, column=0)
+out_entry.grid(row=1, column=1)
+out_button.grid(row=1, column=2)
 
 # resolution selection
 # output resolution selection
@@ -206,8 +206,8 @@ resolution = tk.StringVar(root)
 resolution.set(resolutions[3])
 dropdown = tk.OptionMenu(root, resolution, *resolutions)
 dropdown_label = tk.Label(root, text='Output Resolution', font=('calibre', 10, 'bold'))
-dropdown_label.grid(row=2, column=1)
-dropdown.grid(row=2, column=2)
+dropdown_label.grid(row=2, column=0)
+dropdown.grid(row=2, column=1)
 
 
 # create tabs
@@ -264,10 +264,18 @@ row_counter += 2
 dsa_button = tk.Button(dsa_tab, text="Generate DSA", command=submit_dsa)
 dsa_button.grid(row=row_counter, column=1,
                    columnspan=3, pady=10, sticky="ew")
-spectrogram_button = tk.Button(dsa_tab, text="Generate 3D Spectrogram", command=submit_spectrogram)
+row_counter += 1
+
+
+## Start the spectrogram tab
+row_counter = 0
+
+spectrogram_button = tk.Button(spectrogram_tab, text="Generate 3D Spectrogram", command=submit_spectrogram)
 spectrogram_button.grid(row=row_counter+1, column=1,
                    columnspan=3, pady=10, sticky="ew")
-row_counter += 2
+
+
+
 
 # Progress bar
 ttk.Style().configure("Custom.Horizontal.TProgressbar",
@@ -276,17 +284,12 @@ ttk.Style().configure("Custom.Horizontal.TProgressbar",
                     bordercolor="darkgray", # Outline border
                     lightcolor="white", # Inner border highlight
                     darkcolor="gray") # Inner border shadow
-progress_bar = ttk.Progressbar(dsa_tab, orient='horizontal', mode='determinate', length=TK_WIDTH*1.5, style="Custom.Horizontal.TProgressbar")
-progress_object = TkProgress(dsa_tab, progress_bar)
-progress_bar.grid(row=row_counter, column=1, columnspan=3, pady=10, sticky="ew")
-row_counter += 1
+progress_bar = ttk.Progressbar(root, orient='horizontal', mode='determinate', length=TK_WIDTH*1.5, style="Custom.Horizontal.TProgressbar")
+progress_object = TkProgress(root, progress_bar)
+progress_bar.grid(row=4, column=0, columnspan=3, sticky="ew")
 
 
 dsa_tab.columnconfigure(2, minsize=TK_WIDTH)
 dsa_tab.columnconfigure(2, weight=1)
-
-# create multiple tabls (notebooks)
-
-
 
 root.mainloop()
