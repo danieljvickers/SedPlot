@@ -18,6 +18,8 @@ class EEGArray:
 
         if type(file_array) is str:
             file_array = file_array.split(';')
+        elif type(file_array) == tuple:
+            file_array = list(file_array)
         elif type(file_array) is not list:
             raise "Object passed into `load_array_of_data` is not a string or array. Exiting."
         if file_array[-1] == '':

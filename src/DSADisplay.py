@@ -30,6 +30,8 @@ class DSADisplay:
     startFrame = 0
     endFrame = -1
     sefPercent = 80
+    eegData = None
+    outputFileName = ''
 
 
     def __init__(self, inputFileName=''):
@@ -53,8 +55,8 @@ class DSADisplay:
 
 
     # main loop which renders the plots
-    def create_animation_from_data(self, outputFileName='', channel_number=0, tk_progress_bar=None):
-        if self.do_save_animation and outputFileName == '':
+    def create_animation_from_data(self, channel_number=0, tk_progress_bar=None):
+        if self.do_save_animation and self.outputFileName == '':
             raise ('Requested to save, but no output filename set.')
 
         # define the animation function which is called every frame
@@ -206,7 +208,7 @@ class DSADisplay:
         if not self.do_save_animation:
             plt.show()
         else:
-            file_ending = outputFileName.split('.')[-1]
+            file_ending = self.outputFileName.split('.')[-1]
             writer = None
             if file_ending == 'gif':
                 writer = animation.PillowWriter(fps=self.graphicsSettings.renderSettings.fps, metadata=dict(artist='Daniel J. Vickers'), bitrate=-1)
@@ -222,7 +224,7 @@ class DSADisplay:
                         ani.save('temp.mp4', writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=lambda i, n: progress_bar.update(1))
                 else:
                     tk_progress_bar.set_bar_max(total_frames)
-                    ani.save(outputFileName, writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=tk_progress_bar.update_bar)
+                    ani.save(self.outputFileName, writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=tk_progress_bar.update_bar)
 
                 audio_rate = int(self.eegData.sampleRate * self.processingSettings.T_fast * self.graphicsSettings.renderSettings.fps)
                 scaled_data = np.int16(self.eegData.data / np.max(np.abs(self.eegData.data)) * int(2 ** 15))
@@ -232,16 +234,16 @@ class DSADisplay:
                 video1 = mp.VideoFileClip('temp.mp4')
                 final_duration = min(audio.duration, video1.duration)
                 video2 = video1.with_duration(final_duration)
-                video2.write_videofile(outputFileName)
+                video2.write_videofile(self.outputFileName)
                 final_video = video2.with_audio(audio.with_duration(final_duration))
-                final_video.write_videofile(outputFileName)
+                final_video.write_videofile(self.outputFileName)
                 os.remove('temp.mp4')
                 os.remove('temp.wav')
             else:
                 if not tk_progress_bar:  # uses tqdm if there is no external progress bar in the GUI
                     with tqdm(total=total_frames, desc='Saving video') as progress_bar:
-                        ani.save(outputFileName, writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=lambda i, n: progress_bar.update(1))
+                        ani.save(self.outputFileName, writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=lambda i, n: progress_bar.update(1))
                 else:
                     tk_progress_bar.set_bar_max(total_frames)
-                    ani.save(outputFileName, writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=tk_progress_bar.update_bar)
+                    ani.save(self.outputFileName, writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=tk_progress_bar.update_bar)
         return
