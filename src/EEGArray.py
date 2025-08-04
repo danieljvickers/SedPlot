@@ -5,6 +5,7 @@ import math
 
 class EEGArray:
     data = [np.array([]) for i in range(4)]
+    sampleRate = -1.
 
     def __init__(self, inputFiles):
         self.load_array_of_data(inputFiles)
@@ -38,3 +39,31 @@ class EEGArray:
                     self.data[channel_number] = np.concatenate((self.data[channel_number], signals[channel_number]))
             except:
                 print(f"Unable to load file: {file}")
+
+    def get_dsa_frame(self, T_fast, T_slow, max_plot_frequency, start_time_seconds, channel_number=0):
+        assert start_time_seconds >= 0,  "Requested start time predates the start of the file."
+        num_samples = int(math.floor(self.sampleRate * T_fast))  # samples added in a single frame
+        num_image_frames = int(T_slow / T_fast)
+        f = np.fft.fftshift(np.fft.fftfreq(num_samples, d=1 / self.sampleRate))
+
+        num_frequency_points = 0
+        for f_sample in f:
+            if 0. <= f_sample <= max_plot_frequency:
+                num_frequency_points += 1 # manually count the number of points. # TODO :: There is a nice math way to compute this in a single line based upon the num_samples
+
+        empty_sed_array = np.array([np.zeros(num_frequency_points) - 100. for i in range(num_image_frames)])
+
+        start_frame = math.floor(start_time_seconds * self.sampleRate / num_samples)
+        max_frame = math.floor(self.totalNumSamples / num_samples)
+        assert max_frame >= num_image_frames, "Not enough data loaded in to create the requested image. Consider reducing the input slow time."
+        start_sample = min(num_samples * start_frame, max_frame - num_image_frames)
+
+        for i in range(num_image_frames):
+            y = np.array(self.data[channel_number][start_sample + (num_samples * i):start_sample + (num_samples * (i + 1))])
+            y_f_linear = abs(np.fft.fftshift(np.fft.fft(y)))
+            y_f = 20 * np.log10(y_f_linear)
+
+            empty_sed_array = np.roll(empty_sed_array, -1, axis=0)
+            empty_sed_array[-1] = np.flip(np.fft.ifftshift(y_f)[:len(empty_sed_array[0])])
+
+        return empty_sed_array.transpose()

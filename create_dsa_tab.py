@@ -36,8 +36,13 @@ def create_dsa_tab(renderer, progress_object, dsa_tab):
         if do_time_domain_var.get():
             renderer.graphicsSettings.timeDomainParameters.do_time_domain_plot = True
 
-        # TODO :: Check the output file type and decide if you will render a video or image.
-        renderer.create_animation_from_data(channel_number=0, tk_progress_bar=progress_object)
+        file_ending = renderer.get_ouput_file_ending().lower()
+        if file_ending in ('mp4', 'gif'):
+            renderer.create_dsa_animation(channel_number=0, tk_progress_bar=progress_object)
+        elif file_ending in ('png', 'jpg', 'svg', 'pdf'):
+            renderer.create_dsa_image()
+        else:
+            broadcaster.broadcast(f"File ending '.{file_ending}' is not supported.", 'error')
 
     # min and max dB inputs
     min_db_variable = tk.StringVar(value='20')

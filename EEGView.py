@@ -123,7 +123,7 @@ def quit_me():
 
 def get_input_file():
     filename = askopenfilenames(title="Select EDF Case File(s)",
-                                filetypes=(("edf file", "*.edf"),("All files", "*.*")),
+                                filetypes=(("edf file", "*.edf"), ("All files", "*.*")),
                                 multiple=True)
     file_entry.delete(0, tk.END)
     if filename:
@@ -140,6 +140,10 @@ def get_output_file():
         filetypes=[
             ("Video files", "*.mp4"),
             ("GIF files", "*.gif"),
+            ("PNG files", "*.png"),
+            ("JPG files", "*.jpg"),
+            ("PDF files", "*.pdf"),
+            ("SVG files", "*.svg"),
             ("All files", "*.*")
         ]
     )
@@ -153,7 +157,7 @@ def get_output_file():
         print("File selection canceled.")
 
 
-def set_resolution(tk_variable, _, action):
+def set_resolution(tk_variable=None, _=None, action=None):
     resolution = resolution_var.get()
     renderer.graphicsSettings.renderSettings.figure_size = (16, 9)
     if resolution == "1080p (1920x1080)":
@@ -205,6 +209,7 @@ dropdown = tk.OptionMenu(root, resolution_var, *resolutions)
 dropdown_label = tk.Label(root, text='Output Resolution', font=('calibre', 10, 'bold'))
 dropdown_label.grid(row=2, column=0)
 dropdown.grid(row=2, column=1)
+set_resolution()
 
 
 # create tabs
@@ -238,7 +243,7 @@ progress_bar.grid(row=5, column=0, columnspan=3, sticky="ew")
 dsa_tab.columnconfigure(2, minsize=TK_WIDTH)
 dsa_tab.columnconfigure(2, weight=1)
 
-## TABS
+## Create all of the tabs
 from create_dsa_tab import create_dsa_tab
 create_dsa_tab(renderer, progress_object, dsa_tab)
 from create_spectrogram_tab import create_spectrogram_tab
