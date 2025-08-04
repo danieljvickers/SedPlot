@@ -24,7 +24,7 @@ This application is capable of parsing EDF files, which is the native format fro
 
 ## Citing this Software
 
-If you use this software in your academic publications please consider citing us. The information for the release publication can be found below:
+If you use this software in your academic publications please consider citing us. Citing this works helps to support our open-source development and improve visability of this academic tool. The information for the release publication can be found below:
 
 TODO :: PUT IN A HYPERLINK
 
