@@ -55,8 +55,10 @@ os.environ["IMAGEIO_FFMPEG_EXE"] = ffmpeg_location
 animation.FFMpegWriter.exec_path = ffmpeg_location
 plt.rcParams['animation.ffmpeg_path'] = ffmpeg_location
 
+
 # library imports after ffmpeg is found
 from src.DSADisplay import DSADisplay
+renderer = DSADisplay()
 
 TK_WIDTH = 75
 
@@ -81,9 +83,16 @@ def get_box_number(tkValue):
         return 0
 
 
+def publish_gui_error(gui_msg):
+    print(gui_msg)
+    # TODO :: set a text field to this
+
+
+
 def submit_dsa():
     # create the DSA display and fetch values
-    renderer = DSADisplay(input_file.get())
+    if not renderer.eegData:
+        raise 'No Input Data Selected'  # TODO :: have this publish to the GUI
     renderer.do_save_animation = True
     renderer.graphicsSettings.frequencyDomainParameters.min_db_power = get_box_number(min_db_variable)
     renderer.graphicsSettings.frequencyDomainParameters.max_db_power = get_box_number(max_db_variable)
@@ -172,24 +181,51 @@ root = tk.Tk()
 root.protocol("WM_DELETE_WINDOW", quit_me)  # cleanup protocol for when the window is closed
 root.title("EEGView")
 
-# input for the input file
-# TODO :: Add help message boxes for every single input field that can be opened at run time
+# common DSA file input and output
+# Input
 input_file = tk.StringVar(value='')
 file_label = tk.Label(root, text='EDF File', font=('calibre', 10, 'bold'))
 file_button = tk.Button(root, text="Search", font=10, command=get_input_file)
-file_entry = tk.Entry(root, textvariable=input_file, font=10, width=TK_WIDTH)
-file_label.grid(row=row_counter, column=1)
-file_entry.grid(row=row_counter, column=2)
-file_button.grid(row=row_counter, column=3)
-row_counter += 1
+file_entry = tk.Entry(root, textvariable=input_file, state="readonly", font=10, width=TK_WIDTH)
+file_label.grid(row=0, column=1)
+file_entry.grid(row=0, column=2)
+file_button.grid(row=0, column=3)
+# output
+out_file = tk.StringVar(value='')
+out_label = tk.Label(root, text='Output File', font=('calibre', 10, 'bold'))
+out_button = tk.Button(root, text="Select", font=10, command=get_output_file)
+out_entry = tk.Entry(root, textvariable=out_file, state="readonly", font=10, width=TK_WIDTH)
+out_label.grid(row=1, column=1)
+out_entry.grid(row=1, column=2)
+out_button.grid(row=1, column=3)
+
+# resolution selection
+# output resolution selection
+resolutions = ["360p (640x360)", "480p (640x480)", "720p (1280x720)", "1080p (1920x1080)", "2560x1440", "4K (3840x2160)"]
+resolution = tk.StringVar(root)
+resolution.set(resolutions[3])
+dropdown = tk.OptionMenu(root, resolution, *resolutions)
+dropdown_label = tk.Label(root, text='Output Resolution', font=('calibre', 10, 'bold'))
+dropdown_label.grid(row=2, column=1)
+dropdown.grid(row=2, column=2)
+
+
+# create tabs
+tabControl = ttk.Notebook(root)
+dsa_tab = ttk.Frame(tabControl)
+spectrogram_tab = ttk.Frame(tabControl)
+tabControl.add(dsa_tab, text ='DSA')
+tabControl.add(spectrogram_tab, text ='Spectrogram')
+tabControl.grid(row=3, column=0, columnspan=3, sticky="ew")
+
 
 # min and max dB inputs
 min_db_variable = tk.StringVar(value='20')
 max_db_variable = tk.StringVar(value='65')
-min_db_entry = tk.Entry(root, textvariable=min_db_variable, width=TK_WIDTH)
-max_db_entry = tk.Entry(root, textvariable=max_db_variable, width=TK_WIDTH)
-min_db_label = tk.Label(root, text='Min dB', font=('calibre', 10, 'bold'))
-max_db_label = tk.Label(root, text='Max dB', font=('calibre', 10, 'bold'))
+min_db_entry = tk.Entry(dsa_tab, textvariable=min_db_variable, width=TK_WIDTH)
+max_db_entry = tk.Entry(dsa_tab, textvariable=max_db_variable, width=TK_WIDTH)
+min_db_label = tk.Label(dsa_tab, text='Min dB', font=('calibre', 10, 'bold'))
+max_db_label = tk.Label(dsa_tab, text='Max dB', font=('calibre', 10, 'bold'))
 min_db_label.grid(row=row_counter, column=1)
 min_db_entry.grid(row=row_counter, column=2)
 max_db_label.grid(row=row_counter+1, column=1)
@@ -197,47 +233,27 @@ max_db_entry.grid(row=row_counter+1, column=2)
 row_counter += 2
 
 # font sizes
-axis_font_var = tk.IntVar(root, value=18)
-tick_font_var = tk.IntVar(root, value=14)
-axis_font_label = tk.Label(root, text='Axis Font Size', font=('calibre', 10, 'bold'))
-tick_font_label = tk.Label(root, text='Tick Font Size', font=('calibre', 10, 'bold'))
-axis_font_entry = tk.Entry(root, textvariable=axis_font_var, width=TK_WIDTH)
-tick_font_entry = tk.Entry(root, textvariable=tick_font_var, width=TK_WIDTH)
+axis_font_var = tk.IntVar(dsa_tab, value=18)
+tick_font_var = tk.IntVar(dsa_tab, value=14)
+axis_font_label = tk.Label(dsa_tab, text='Axis Font Size', font=('calibre', 10, 'bold'))
+tick_font_label = tk.Label(dsa_tab, text='Tick Font Size', font=('calibre', 10, 'bold'))
+axis_font_entry = tk.Entry(dsa_tab, textvariable=axis_font_var, width=TK_WIDTH)
+tick_font_entry = tk.Entry(dsa_tab, textvariable=tick_font_var, width=TK_WIDTH)
 axis_font_label.grid(row=row_counter, column=1)
 axis_font_entry.grid(row=row_counter, column=2)
 tick_font_label.grid(row=row_counter+1, column=1)
 tick_font_entry.grid(row=row_counter+1, column=2)
 row_counter += 2
 
-# input for the output file
-out_file = tk.StringVar(value='')
-out_label = tk.Label(root, text='Output File', font=('calibre', 10, 'bold'))
-out_button = tk.Button(root, text="Select", font=10, command=get_output_file)
-out_entry = tk.Entry(root, textvariable=out_file, font=10, width=TK_WIDTH)
-out_label.grid(row=row_counter, column=1)
-out_entry.grid(row=row_counter, column=2)
-out_button.grid(row=row_counter, column=3)
-row_counter += 1
-
-# output resolution selection
-resolutions = ["360p (640x360)", "480p (640x480)", "720p (1280x720)", "1080p (1920x1080)", "2560x1440", "4K (3840x2160)"]
-resolution = tk.StringVar(root)
-resolution.set(resolutions[3])
-dropdown = tk.OptionMenu(root, resolution, *resolutions)
-dropdown_label = tk.Label(root, text='Output Resolution', font=('calibre', 10, 'bold'))
-dropdown_label.grid(row=row_counter, column=1)
-dropdown.grid(row=row_counter, column=2)
-row_counter += 1
-
 # check boxes
-do_sef_var = tk.BooleanVar(root)  # check if you want to do the SEF on the plot
-do_audio_var = tk.BooleanVar(root)  # check if you want to add audio to the video
-do_frequency_spectrum_var = tk.BooleanVar(root)
-do_time_domain_var = tk.BooleanVar(root)
-do_sef_checkbox = tk.Checkbutton(root, text="Plot SEF", variable=do_sef_var, onvalue=True, offvalue=False)
-do_aidio_checkbox = tk.Checkbutton(root, text="Sonicate", variable=do_audio_var, onvalue=True, offvalue=False)
-do_frequency_domain_checkbox = tk.Checkbutton(root, text="Plot Freq. Domain", variable=do_frequency_spectrum_var, onvalue=True, offvalue=False)
-do_time_domain_checkbox = tk.Checkbutton(root, text="Plot Time Domain", variable=do_time_domain_var, onvalue=True, offvalue=False)
+do_sef_var = tk.BooleanVar(dsa_tab)  # check if you want to do the SEF on the plot
+do_audio_var = tk.BooleanVar(dsa_tab)  # check if you want to add audio to the video
+do_frequency_spectrum_var = tk.BooleanVar(dsa_tab)
+do_time_domain_var = tk.BooleanVar(dsa_tab)
+do_sef_checkbox = tk.Checkbutton(dsa_tab, text="Plot SEF", variable=do_sef_var, onvalue=True, offvalue=False)
+do_aidio_checkbox = tk.Checkbutton(dsa_tab, text="Sonicate", variable=do_audio_var, onvalue=True, offvalue=False)
+do_frequency_domain_checkbox = tk.Checkbutton(dsa_tab, text="Plot Freq. Domain", variable=do_frequency_spectrum_var, onvalue=True, offvalue=False)
+do_time_domain_checkbox = tk.Checkbutton(dsa_tab, text="Plot Time Domain", variable=do_time_domain_var, onvalue=True, offvalue=False)
 do_sef_checkbox.grid(row=row_counter, column=1)
 do_aidio_checkbox.grid(row=row_counter, column=2)
 do_frequency_domain_checkbox.grid(row=row_counter, column=3)
@@ -245,10 +261,10 @@ do_time_domain_checkbox.grid(row=row_counter + 1, column=1)
 row_counter += 2
 
 # The submission buttons
-dsa_button = tk.Button(root, text="Generate DSA", command=submit_dsa)
+dsa_button = tk.Button(dsa_tab, text="Generate DSA", command=submit_dsa)
 dsa_button.grid(row=row_counter, column=1,
                    columnspan=3, pady=10, sticky="ew")
-spectrogram_button = tk.Button(root, text="Generate 3D Spectrogram", command=submit_spectrogram)
+spectrogram_button = tk.Button(dsa_tab, text="Generate 3D Spectrogram", command=submit_spectrogram)
 spectrogram_button.grid(row=row_counter+1, column=1,
                    columnspan=3, pady=10, sticky="ew")
 row_counter += 2
@@ -260,13 +276,17 @@ ttk.Style().configure("Custom.Horizontal.TProgressbar",
                     bordercolor="darkgray", # Outline border
                     lightcolor="white", # Inner border highlight
                     darkcolor="gray") # Inner border shadow
-progress_bar = ttk.Progressbar(root, orient='horizontal', mode='determinate', length=TK_WIDTH*1.5, style="Custom.Horizontal.TProgressbar")
-progress_object = TkProgress(root, progress_bar)
+progress_bar = ttk.Progressbar(dsa_tab, orient='horizontal', mode='determinate', length=TK_WIDTH*1.5, style="Custom.Horizontal.TProgressbar")
+progress_object = TkProgress(dsa_tab, progress_bar)
 progress_bar.grid(row=row_counter, column=1, columnspan=3, pady=10, sticky="ew")
 row_counter += 1
 
 
-root.columnconfigure(2, minsize=TK_WIDTH)
-root.columnconfigure(2, weight=1)
+dsa_tab.columnconfigure(2, minsize=TK_WIDTH)
+dsa_tab.columnconfigure(2, weight=1)
+
+# create multiple tabls (notebooks)
+
+
 
 root.mainloop()

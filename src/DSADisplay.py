@@ -32,8 +32,16 @@ class DSADisplay:
     sefPercent = 80
 
 
-    def __init__(self, inputFileName):
+    def __init__(self, inputFileName=''):
+        if inputFileName !=  '':
+            self.eegData = EEGArray(inputFileName)
+
+
+    def load_eeg_data(self, inputFileName):
+        if self.eegData:
+            del self.eegData  # TODO :: Determine if this kind of memory management is actually required. Also try ot determine if this must be thread safe.
         self.eegData = EEGArray(inputFileName)
+
 
     # takes in frequency-domain data to compute the SEF80
     def calc_SEF_value(self, f, linear_data, num_frequency_points):
@@ -45,7 +53,7 @@ class DSADisplay:
 
 
     # main loop which renders the plots
-    def create_animation_from_data(self, outputFileName='', channel_number=0, tk_progress_bar=None, ffmpeg_path=None):
+    def create_animation_from_data(self, outputFileName='', channel_number=0, tk_progress_bar=None):
         if self.do_save_animation and outputFileName == '':
             raise ('Requested to save, but no output filename set.')
 
