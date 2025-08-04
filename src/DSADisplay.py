@@ -64,9 +64,12 @@ class DSADisplay:
         else:
             print(msg)
 
+    def get_ouput_file_ending(self):
+        return self.outputFileName.split('.')[-1]
+
 
     # main loop which renders the plots
-    def create_animation_from_data(self, channel_number=0, tk_progress_bar=None):
+    def create_dsa_animation(self, channel_number=0, tk_progress_bar=None):
         
         if self.do_save_animation and self.outputFileName == '':
             self.external_broadcast('Requested to save, but no output filename set.', 'except')
@@ -221,14 +224,14 @@ class DSADisplay:
         if not self.do_save_animation:
             plt.show()
         else:
-            file_ending = self.outputFileName.split('.')[-1]
+            file_ending = self.get_ouput_file_ending()
             writer = None
             if file_ending == 'gif':
                 writer = animation.PillowWriter(fps=self.graphicsSettings.renderSettings.fps, metadata=dict(artist='Daniel J. Vickers'), bitrate=-1)
             elif file_ending == 'mp4':
                 writer = animation.FFMpegWriter(fps=self.graphicsSettings.renderSettings.fps) #, extra_args=['-vcodec', 'libx264'])
             else:
-                print('ERROR: ' + file_ending + ' is not a valid output file format')
+                self.external_broadcast("ERROR: {file_ending} is not a valid output file format for animations", 'except')
                 return
 
             self.external_broadcast(f"Saving Initial Animation to {self.outputFileName}")
@@ -265,3 +268,26 @@ class DSADisplay:
                     ani.save(self.outputFileName, writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=tk_progress_bar.update_bar)
             self.external_broadcast("Complete", 'success')
         return
+
+    def create_dsa_image(self, start_time_minutes=0.):
+        start_time_seconds = start_time_minutes * 60.
+        dsa_array = self.eegData.get_dsa_frame(self.processingSettings.T_fast, self.processingSettings.T_slow, self.graphicsSettings.frequencyDomainParameters.max_plot_frequency, start_time_seconds)
+
+        fig = plt.figure(figsize=self.graphicsSettings.renderSettings.figure_size)
+        ax = plt.gca()
+        sed_plot = plt.imshow(dsa_array, cmap='jet',
+                                vmin=self.graphicsSettings.frequencyDomainParameters.min_db_power,
+                                vmax=self.graphicsSettings.frequencyDomainParameters.max_db_power,
+                                aspect='auto', interpolation='bilinear',
+                                extent=[-int(self.processingSettings.T_slow / 60), 0,
+                                self.graphicsSettings.frequencyDomainParameters.max_plot_frequency, 0])
+        cbar = plt.colorbar()
+        cbar.set_label('Power (dB)', fontsize=self.graphicsSettings.renderSettings.font_size)
+        ax.set_yticks(np.array([-0. + i*self.graphicsSettings.frequencyDomainParameters.max_plot_frequency/4 for i in range(5)]))
+        ax.set_yticklabels(np.arange(self.graphicsSettings.frequencyDomainParameters.max_plot_frequency, -0.5,
+                                        -int(self.graphicsSettings.frequencyDomainParameters.max_plot_frequency / 4)))
+        plt.xlabel('Time (min)', fontsize=self.graphicsSettings.renderSettings.font_size)
+        plt.ylabel('Frequency (Hz)', fontsize=self.graphicsSettings.renderSettings.font_size)
+        plt.tight_layout()
+        plt.savefig(self.outputFileName, dpi=self.graphicsSettings.renderSettings.dpi)
+        self.external_broadcast("Image Generated", "success")
