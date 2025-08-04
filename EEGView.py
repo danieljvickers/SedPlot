@@ -65,6 +65,11 @@ from src.DSADisplay import DSADisplay
 renderer = DSADisplay()
 
 TK_WIDTH = 75
+SUCC_COLOR = '\033[32m'
+INFO_COLOR = '\033[36m'
+WARN_COLOR = '\033[33m'
+ERROR_COLOR = '\033[31m'
+RESET = '\033[0m'
 
 
 # progress bar class for Tkinter which can be given to matplotlib and be updated
@@ -79,6 +84,30 @@ class TkProgress:
     def update_bar(self, i, n):
         self.progress_bar['value'] = i
         self.master.update_idletasks() # Force update of the GUI
+
+
+# progress bar class for Tkinter which can be given to matplotlib and be updated
+class TkStatus:
+    def __init__(self, master, tk_label):
+        self.broadcast_label = tk_label
+        self.master = master
+    
+    def broadcast(self, msg, log_level='info'):
+        if log_level == 'info':
+            print(f"{INFO_COLOR}{msg}{RESET}")
+            self.broadcast_label.config(text=msg, fg='black')
+        elif log_level == 'success':
+            print(f"{SUCC_COLOR}{msg}{RESET}")
+            self.broadcast_label.config(text=msg, fg='green')
+        elif log_level == 'warn':
+            print(f"{WARN_COLOR}{msg}{RESET}")
+            self.broadcast_label.config(text=msg, fg='orange')
+        elif log_level == 'error':
+            print(f"{ERROR_COLOR}{msg}{RESET}")
+            self.broadcast_label.config(text=msg, fg='red')
+        elif log_level == 'except':  # complete failure
+            self.broadcast_label.config(text=msg, fg='red')
+            raise msg
 
 
 def publish_gui_error(gui_msg):
@@ -187,6 +216,13 @@ tabControl.add(spectrogram_tab, text ='Spectrogram')
 tabControl.grid(row=3, column=0, columnspan=3, sticky="ew")
 
 
+# broadcaster
+broadcast_label = tk.Label(root)
+broadcast_label.grid(row=4, column=1)
+broadcaster = TkStatus(root, broadcast_label)
+renderer.broadcaster = broadcaster
+
+
 # Progress bar
 ttk.Style().configure("Custom.Horizontal.TProgressbar",
                     background="light green",  # Color of the filled part
@@ -196,7 +232,7 @@ ttk.Style().configure("Custom.Horizontal.TProgressbar",
                     darkcolor="gray") # Inner border shadow
 progress_bar = ttk.Progressbar(root, orient='horizontal', mode='determinate', length=TK_WIDTH*1.5, style="Custom.Horizontal.TProgressbar")
 progress_object = TkProgress(root, progress_bar)
-progress_bar.grid(row=4, column=0, columnspan=3, sticky="ew")
+progress_bar.grid(row=5, column=0, columnspan=3, sticky="ew")
 
 
 dsa_tab.columnconfigure(2, minsize=TK_WIDTH)
