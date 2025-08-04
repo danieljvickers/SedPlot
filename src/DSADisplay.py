@@ -32,6 +32,7 @@ class DSADisplay:
     sefPercent = 80
     eegData = None
     outputFileName = ''
+    broadcaster = None
 
 
     def __init__(self, inputFileName=''):
@@ -42,7 +43,11 @@ class DSADisplay:
     def load_eeg_data(self, inputFileName):
         if self.eegData:
             del self.eegData  # TODO :: Determine if this kind of memory management is actually required. Also try ot determine if this must be thread safe.
-        self.eegData = EEGArray(inputFileName)
+        try:
+            self.eegData = EEGArray(inputFileName)
+            self.external_broadcast("File Loaded")
+        except:
+            self.external_broadcast(f"Error Opening file(s). No such files or invalid data format.", 'error')
 
 
     # takes in frequency-domain data to compute the SEF80
@@ -52,12 +57,20 @@ class DSADisplay:
         for i in range(len(y_in_sum)):
             if sum(y_in_sum[:i]) > total_power * (self.sefPercent / 100.):  # check if we are over the SEF80
                 return np.fft.ifftshift(f)[i-1]  # return the SEF value at this point
+            
+    def external_broadcast(self, msg, log_level='info'):
+        if self.broadcaster:
+            self.broadcaster.broadcast(msg, log_level)
+        else:
+            print(msg)
 
 
     # main loop which renders the plots
     def create_animation_from_data(self, channel_number=0, tk_progress_bar=None):
+        
         if self.do_save_animation and self.outputFileName == '':
-            raise ('Requested to save, but no output filename set.')
+            self.external_broadcast('Requested to save, but no output filename set.', 'except')
+        self.external_broadcast("Setting Up Plots")
 
         # define the animation function which is called every frame
         spectral_edge_frequency = 0
@@ -218,6 +231,7 @@ class DSADisplay:
                 print('ERROR: ' + file_ending + ' is not a valid output file format')
                 return
 
+            self.external_broadcast(f"Saving Initial Animation to {self.outputFileName}")
             if file_ending == 'mp4' and self.do_add_audio_to_animation:
                 if not tk_progress_bar:  # uses tqdm if there is no external progress bar in the GUI
                     with tqdm(total=total_frames, desc='Saving video') as progress_bar:
@@ -226,6 +240,7 @@ class DSADisplay:
                     tk_progress_bar.set_bar_max(total_frames)
                     ani.save(self.outputFileName, writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=tk_progress_bar.update_bar)
 
+                self.external_broadcast(f"Generating Sonicated Audio")
                 audio_rate = int(self.eegData.sampleRate * self.processingSettings.T_fast * self.graphicsSettings.renderSettings.fps)
                 scaled_data = np.int16(self.eegData.data / np.max(np.abs(self.eegData.data)) * int(2 ** 15))
                 wavfile.write('temp.wav', audio_rate, scaled_data)
@@ -236,7 +251,9 @@ class DSADisplay:
                 video2 = video1.with_duration(final_duration)
                 video2.write_videofile(self.outputFileName)
                 final_video = video2.with_audio(audio.with_duration(final_duration))
+                self.external_broadcast("Attaching Audio to Video")
                 final_video.write_videofile(self.outputFileName)
+                self.external_broadcast("Cleaning Up")
                 os.remove('temp.mp4')
                 os.remove('temp.wav')
             else:
@@ -246,4 +263,5 @@ class DSADisplay:
                 else:
                     tk_progress_bar.set_bar_max(total_frames)
                     ani.save(self.outputFileName, writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=tk_progress_bar.update_bar)
+            self.external_broadcast("Complete", 'success')
         return
