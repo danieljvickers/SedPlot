@@ -175,6 +175,10 @@ def set_resolution(tk_variable=None, _=None, action=None):
         renderer.graphicsSettings.renderSettings.figure_size == (16, 12)
 
 
+def set_channel_num(tk_variable=None, _=None, action=None):
+    renderer.processingSettings.channel_number = channel_map[channel_var.get()]
+    
+
 #create root and the upper file loading
 row_counter = 1
 root = tk.Tk()
@@ -205,11 +209,28 @@ resolutions = ["360p (640x360)", "480p (640x480)", "720p (1280x720)", "1080p (19
 resolution_var = tk.StringVar(root)
 resolution_var.set(resolutions[3])
 resolution_var.trace_add('write', set_resolution)
-dropdown = tk.OptionMenu(root, resolution_var, *resolutions)
-dropdown_label = tk.Label(root, text='Output Resolution', font=('calibre', 10, 'bold'))
-dropdown_label.grid(row=2, column=0)
-dropdown.grid(row=2, column=1)
+resolution_dropdown = tk.OptionMenu(root, resolution_var, *resolutions)
+resolution_label = tk.Label(root, text='Output Resolution', font=('calibre', 10, 'bold'))
+resolution_label.grid(row=2, column=0)
+resolution_dropdown.grid(row=2, column=1)
 set_resolution()
+
+# channel number select
+channel_map = {
+    'L1': 0,
+    'L2': 1,
+    'R1': 2,
+    'R2': 3,  # TODO :: verify all of these labels
+}
+channel_var = tk.StringVar(root)
+channel_var.set(list(channel_map.keys())[0])
+channel_var.trace_add('write', set_channel_num)
+channel_dropdown = tk.OptionMenu(root, channel_var, *channel_map.keys())
+channel_label = tk.Label(root, text='EEG Channel', font=('calibre', 10, 'bold'))
+channel_label.grid(row=3, column=0)
+channel_dropdown.grid(row=3, column=1)
+set_resolution()
+
 
 
 # create tabs
@@ -218,12 +239,12 @@ dsa_tab = ttk.Frame(tabControl)
 spectrogram_tab = ttk.Frame(tabControl)
 tabControl.add(dsa_tab, text ='DSA')
 tabControl.add(spectrogram_tab, text ='Spectrogram')
-tabControl.grid(row=3, column=0, columnspan=3, sticky="ew")
+tabControl.grid(row=4, column=0, columnspan=3, sticky="ew")
 
 
 # broadcaster
 broadcast_label = tk.Label(root)
-broadcast_label.grid(row=4, column=1)
+broadcast_label.grid(row=5, column=1)
 broadcaster = TkStatus(root, broadcast_label)
 renderer.broadcaster = broadcaster
 
@@ -237,7 +258,7 @@ ttk.Style().configure("Custom.Horizontal.TProgressbar",
                     darkcolor="gray") # Inner border shadow
 progress_bar = ttk.Progressbar(root, orient='horizontal', mode='determinate', length=TK_WIDTH*1.5, style="Custom.Horizontal.TProgressbar")
 progress_object = TkProgress(root, progress_bar)
-progress_bar.grid(row=5, column=0, columnspan=3, sticky="ew")
+progress_bar.grid(row=6, column=0, columnspan=3, sticky="ew")
 
 
 dsa_tab.columnconfigure(2, minsize=TK_WIDTH)

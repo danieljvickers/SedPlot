@@ -10,3 +10,4 @@ ffmpeg/*
 dist/*
 *.spec
 build/*
+.DS_Store

@@ -23,6 +23,7 @@ class RenderSettings:
 class ProcessingSettings:
     T_slow = 20*60
     T_fast = 2.5
+    channel_number = 0
 
 class GraphicsSettings:
     timeDomainParameters = TimeDomainParameters()

@@ -69,7 +69,7 @@ class DSADisplay:
 
 
     # main loop which renders the plots
-    def create_dsa_animation(self, channel_number=0, tk_progress_bar=None):
+    def create_dsa_animation(self, tk_progress_bar=None):
         
         if self.do_save_animation and self.outputFileName == '':
             self.external_broadcast('Requested to save, but no output filename set.', 'except')
@@ -79,7 +79,7 @@ class DSADisplay:
         spectral_edge_frequency = 0
         def run_animation(frame_number):
             global_index = self.startFrame + frame_number
-            y = np.array(self.eegData.data[channel_number][num_samples * global_index:num_samples * (global_index + 1)])
+            y = np.array(self.eegData.data[self.processingSettings.channel_number][num_samples * global_index:num_samples * (global_index + 1)])
 
             # handle the time-domain plotting case
             if self.graphicsSettings.timeDomainParameters.do_time_domain_plot:
@@ -131,7 +131,7 @@ class DSADisplay:
             if 0. <= f_sample <= self.graphicsSettings.frequencyDomainParameters.max_plot_frequency:
                 num_frequency_points += 1
         if self.endFrame < 0:
-            self.endFrame = int(math.floor(len(self.eegData.data[channel_number]) / num_samples))
+            self.endFrame = int(math.floor(len(self.eegData.data[self.processingSettings.channel_number]) / num_samples))
         total_frames = int(self.endFrame - self.startFrame)
 
         # start the outline of the basic plots
@@ -271,7 +271,11 @@ class DSADisplay:
 
     def create_dsa_image(self, start_time_minutes=0.):
         start_time_seconds = start_time_minutes * 60.
-        dsa_array = self.eegData.get_dsa_frame(self.processingSettings.T_fast, self.processingSettings.T_slow, self.graphicsSettings.frequencyDomainParameters.max_plot_frequency, start_time_seconds)
+        dsa_array = self.eegData.get_dsa_frame(self.processingSettings.T_fast, 
+            self.processingSettings.T_slow,
+            self.graphicsSettings.frequencyDomainParameters.max_plot_frequency,
+            start_time_seconds,
+            channel_number=self.processingSettings.channel_number)
 
         fig = plt.figure(figsize=self.graphicsSettings.renderSettings.figure_size)
         ax = plt.gca()
