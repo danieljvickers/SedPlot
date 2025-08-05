@@ -79,7 +79,7 @@ class DSADisplay:
         spectral_edge_frequency = 0
         def run_animation(frame_number):
             global_index = self.startFrame + frame_number
-            y = np.array(self.eegData.data[self.graphicsSettings.renderSettings.channel_number][num_samples * global_index:num_samples * (global_index + 1)])
+            y = np.array(self.eegData.data[self.processingSettings.channel_number][num_samples * global_index:num_samples * (global_index + 1)])
 
             # handle the time-domain plotting case
             if self.graphicsSettings.timeDomainParameters.do_time_domain_plot:
@@ -131,7 +131,7 @@ class DSADisplay:
             if 0. <= f_sample <= self.graphicsSettings.frequencyDomainParameters.max_plot_frequency:
                 num_frequency_points += 1
         if self.endFrame < 0:
-            self.endFrame = int(math.floor(len(self.eegData.data[self.graphicsSettings.renderSettings.channel_number]) / num_samples))
+            self.endFrame = int(math.floor(len(self.eegData.data[self.processingSettings.channel_number]) / num_samples))
         total_frames = int(self.endFrame - self.startFrame)
 
         # start the outline of the basic plots
@@ -275,7 +275,7 @@ class DSADisplay:
             self.processingSettings.T_slow,
             self.graphicsSettings.frequencyDomainParameters.max_plot_frequency,
             start_time_seconds,
-            channel_number=self.graphicsSettings.renderSettings.channel_number)
+            channel_number=self.processingSettings.channel_number)
 
         fig = plt.figure(figsize=self.graphicsSettings.renderSettings.figure_size)
         ax = plt.gca()

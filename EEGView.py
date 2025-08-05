@@ -176,7 +176,7 @@ def set_resolution(tk_variable=None, _=None, action=None):
 
 
 def set_channel_num(tk_variable=None, _=None, action=None):
-    renderer.graphicsSettings.renderSettings.channel_number = channel_map[channel_var.get()]
+    renderer.processingSettings.channel_number = channel_map[channel_var.get()]
     
 
 #create root and the upper file loading
