@@ -45,8 +45,8 @@ def create_dsa_tab(renderer, progress_object, dsa_tab, start_time_var):
             renderer.external_broadcast(f"File ending '.{file_ending}' is not supported.", 'error')
 
     # min and max dB inputs
-    min_db_variable = tk.StringVar(value='20')
-    max_db_variable = tk.StringVar(value='65')
+    min_db_variable = tk.DoubleVar(value=renderer.graphicsSettings.frequencyDomainParameters.min_db_power)
+    max_db_variable = tk.DoubleVar(value=renderer.graphicsSettings.frequencyDomainParameters.max_db_power)
     min_db_entry = tk.Entry(dsa_tab, textvariable=min_db_variable, width=TK_WIDTH)
     max_db_entry = tk.Entry(dsa_tab, textvariable=max_db_variable, width=TK_WIDTH)
     min_db_label = tk.Label(dsa_tab, text='Min dB', font=('calibre', 10, 'bold'))
