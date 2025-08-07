@@ -265,9 +265,9 @@ dsa_tab.columnconfigure(2, minsize=TK_WIDTH)
 dsa_tab.columnconfigure(2, weight=1)
 
 ## Create all of the tabs
-from create_dsa_tab import create_dsa_tab
+from gui.create_dsa_tab import create_dsa_tab
 create_dsa_tab(renderer, progress_object, dsa_tab)
-from create_spectrogram_tab import create_spectrogram_tab
+from gui.create_spectrogram_tab import create_spectrogram_tab
 create_spectrogram_tab(renderer, progress_object, spectrogram_tab)
 
 root.mainloop()
