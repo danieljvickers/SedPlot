@@ -52,14 +52,15 @@ class EEGArray:
                 num_frequency_points += 1 # manually count the number of points. # TODO :: There is a nice math way to compute this in a single line based upon the num_samples
 
         empty_sed_array = np.array([np.zeros(num_frequency_points) - 100. for i in range(num_image_frames)])
+        processing_data = np.concatenate((np.ones(num_image_frames * num_samples) * 1e-10, self.data[channel_number]))  # concatenate zeros to allow for begining generatino as well
 
         start_frame = math.floor(start_time_seconds * self.sampleRate / num_samples)
-        max_frame = math.floor(self.totalNumSamples / num_samples)
+        max_frame = math.floor(self.totalNumSamples / num_samples) + num_image_frames
         assert max_frame >= num_image_frames, "Not enough data loaded in to create the requested image. Consider reducing the input slow time."
-        start_sample = min(num_samples * start_frame, max_frame - num_image_frames)
+        start_frame = min(start_frame, max_frame - num_image_frames)
 
-        for i in range(num_image_frames):
-            y = np.array(self.data[channel_number][start_sample + (num_samples * i):start_sample + (num_samples * (i + 1))])
+        for i in range(start_frame, start_frame+num_image_frames):
+            y = np.array(processing_data[num_samples * i:num_samples * (i + 1)])
             y_f_linear = abs(np.fft.fftshift(np.fft.fft(y)))
             y_f = 20 * np.log10(y_f_linear)
 

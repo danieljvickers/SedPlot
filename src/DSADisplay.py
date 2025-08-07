@@ -27,7 +27,6 @@ class DSADisplay:
     do_plot_spectral_edge_on_spectrogram = False  # determins if the SEF will be rendered on top of the spectrogram
     graphicsSettings = GraphicsSettings()
     processingSettings = ProcessingSettings()
-    startFrame = 0
     endFrame = -1
     sefPercent = 80
     eegData = None
@@ -69,7 +68,7 @@ class DSADisplay:
 
 
     # main loop which renders the plots
-    def create_dsa_animation(self, tk_progress_bar=None):
+    def create_dsa_animation(self, start_time_min=0,tk_progress_bar=None, ):
         
         if self.do_save_animation and self.outputFileName == '':
             self.external_broadcast('Requested to save, but no output filename set.', 'except')
@@ -77,8 +76,10 @@ class DSADisplay:
 
         # define the animation function which is called every frame
         spectral_edge_frequency = 0
+        global_frame_counter = 0
         def run_animation(frame_number):
-            global_index = self.startFrame + frame_number
+            global_index = global_frame_counter
+            global_frame_counter += 1
             y = np.array(self.eegData.data[self.processingSettings.channel_number][num_samples * global_index:num_samples * (global_index + 1)])
 
             # handle the time-domain plotting case
@@ -219,6 +220,11 @@ class DSADisplay:
                     plt.yticks(fontsize=GraphicsSettings.renderSettings.tick_size)
         plt.tight_layout()
 
+        # skip frames until we get to the start time
+        frames_to_skip = math.floor(start_time_min * 60. / self.processingSettings.T_fast)
+        for i in range(frames_to_skip):
+            run_animation(i)
+
         # start the animation
         ani = animation.FuncAnimation(fig, run_animation, repeat=False, frames=total_frames, interval=self.processingSettings.T_fast * 1000)
         if not self.do_save_animation:
@@ -269,13 +275,17 @@ class DSADisplay:
             self.external_broadcast("Complete", 'success')
         return
 
-    def create_dsa_image(self, start_time_minutes=0.):
-        start_time_seconds = start_time_minutes * 60.
-        dsa_array = self.eegData.get_dsa_frame(self.processingSettings.T_fast, 
-            self.processingSettings.T_slow,
-            self.graphicsSettings.frequencyDomainParameters.max_plot_frequency,
-            start_time_seconds,
-            channel_number=self.processingSettings.channel_number)
+    def create_dsa_image(self, time):
+        start_time_seconds = time * 60.
+        try:
+            dsa_array = self.eegData.get_dsa_frame(self.processingSettings.T_fast, 
+                self.processingSettings.T_slow,
+                self.graphicsSettings.frequencyDomainParameters.max_plot_frequency,
+                start_time_seconds,
+                channel_number=self.processingSettings.channel_number)
+        except:
+            self.external_broadcast("Unable to generate DSA Frame. Consider Checking the Start Time.", "error")
+            return
 
         fig = plt.figure(figsize=self.graphicsSettings.renderSettings.figure_size)
         ax = plt.gca()
