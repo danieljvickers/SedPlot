@@ -12,7 +12,7 @@ import subprocess
 
 TK_WIDTH = 75
 
-def create_dsa_tab(renderer, progress_object, dsa_tab):
+def create_dsa_tab(renderer, progress_object, dsa_tab, start_time_var):
     row_counter = 0
 
     def submit_dsa():
@@ -38,9 +38,9 @@ def create_dsa_tab(renderer, progress_object, dsa_tab):
 
         file_ending = renderer.get_ouput_file_ending().lower()
         if file_ending in ('mp4', 'gif'):
-            renderer.create_dsa_animation(tk_progress_bar=progress_object)
+            renderer.create_dsa_animation(tk_progress_bar=progress_object, start_time_min=start_time_var.get())
         elif file_ending in ('png', 'jpg', 'svg', 'pdf'):
-            renderer.create_dsa_image()
+            renderer.create_dsa_image(start_time_var.get())
         else:
             renderer.external_broadcast(f"File ending '.{file_ending}' is not supported.", 'error')
 

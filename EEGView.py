@@ -231,20 +231,29 @@ channel_label.grid(row=3, column=0)
 channel_dropdown.grid(row=3, column=1)
 set_resolution()
 
+# time select
+start_time_var = tk.DoubleVar(root)
+start_time_var.set(renderer.processingSettings.T_slow / 60.)
+start_time_entry = tk.Entry(root, textvariable=start_time_var, font=10, width=TK_WIDTH)
+start_time_label = tk.Label(root, text="Start Time (min)", font=('calibre', 10, 'bold'))
+start_time_label.grid(row=4, column=0)
+start_time_entry.grid(row=4, column=1)
 
 
 # create tabs
 tabControl = ttk.Notebook(root)
 dsa_tab = ttk.Frame(tabControl)
 spectrogram_tab = ttk.Frame(tabControl)
+advanced_tab = ttk.Frame(tabControl)
 tabControl.add(dsa_tab, text ='DSA')
 tabControl.add(spectrogram_tab, text ='Spectrogram')
-tabControl.grid(row=4, column=0, columnspan=3, sticky="ew")
+tabControl.add(advanced_tab, text ='Advanced')
+tabControl.grid(row=5, column=0, columnspan=3, sticky="ew")
 
 
 # broadcaster
 broadcast_label = tk.Label(root)
-broadcast_label.grid(row=5, column=1)
+broadcast_label.grid(row=6, column=1)
 broadcaster = TkStatus(root, broadcast_label)
 renderer.broadcaster = broadcaster
 
@@ -258,16 +267,16 @@ ttk.Style().configure("Custom.Horizontal.TProgressbar",
                     darkcolor="gray") # Inner border shadow
 progress_bar = ttk.Progressbar(root, orient='horizontal', mode='determinate', length=TK_WIDTH*1.5, style="Custom.Horizontal.TProgressbar")
 progress_object = TkProgress(root, progress_bar)
-progress_bar.grid(row=6, column=0, columnspan=3, sticky="ew")
+progress_bar.grid(row=7, column=0, columnspan=3, sticky="ew")
 
 
 dsa_tab.columnconfigure(2, minsize=TK_WIDTH)
 dsa_tab.columnconfigure(2, weight=1)
 
 ## Create all of the tabs
-from create_dsa_tab import create_dsa_tab
-create_dsa_tab(renderer, progress_object, dsa_tab)
-from create_spectrogram_tab import create_spectrogram_tab
-create_spectrogram_tab(renderer, progress_object, spectrogram_tab)
+from gui.create_dsa_tab import create_dsa_tab
+create_dsa_tab(renderer, progress_object, dsa_tab, start_time_var)
+from gui.create_spectrogram_tab import create_spectrogram_tab
+create_spectrogram_tab(renderer, progress_object, spectrogram_tab, start_time_var)
 
 root.mainloop()
