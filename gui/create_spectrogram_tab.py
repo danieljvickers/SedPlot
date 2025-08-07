@@ -12,7 +12,7 @@ import subprocess
 
 TK_WIDTH = 75
 
-def create_spectrogram_tab(renderer, progress_object, spectrogram_tab):
+def create_spectrogram_tab(renderer, progress_object, spectrogram_tab, start_time_var):
     def submit_spectrogram():
         # Empty for now, but I want it to generate 3D spectrogram videos
         # Look at references/spectrogram_animation.py for what should be done

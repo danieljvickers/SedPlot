@@ -235,7 +235,7 @@ set_resolution()
 start_time_var = tk.DoubleVar(root)
 start_time_var.set(renderer.processingSettings.T_slow / 60.)
 start_time_entry = tk.Entry(root, textvariable=start_time_var, font=10, width=TK_WIDTH)
-start_time_label = tk.Label(rootm, text="Start Time (min)", font=('calibre', 10, 'bold'))
+start_time_label = tk.Label(root, text="Start Time (min)", font=('calibre', 10, 'bold'))
 start_time_label.grid(row=4, column=0)
 start_time_entry.grid(row=4, column=1)
 

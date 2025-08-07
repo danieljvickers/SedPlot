@@ -39,6 +39,11 @@ class EEGArray:
                     self.data[channel_number] = np.concatenate((self.data[channel_number], signals[channel_number]))
             except:
                 print(f"Unable to load file: {file}")
+    
+    
+    def get_end_frame_number(self, num_samples):
+        return math.floor(len(self.data[0]) / num_samples) - 1
+
 
     def get_dsa_frame(self, T_fast, T_slow, max_plot_frequency, start_time_seconds, channel_number=0):
         assert start_time_seconds >= 0,  "Requested start time predates the start of the file."
