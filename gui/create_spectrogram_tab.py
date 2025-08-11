@@ -35,16 +35,16 @@ def create_spectrogram_tab(renderer, progress_object, root, start_time_var):
     row_counter = 0
 
 
-    start_angle_var = tk.DoubleVar(root)
-    start_angle_label = tk.Label(root, text='Starting Angle (degrees)', font=('calibre', 10, 'bold'))
-    start_angle_entry = tk.Entry(root, textvariable=start_angle_var)
-    end_angle_var = tk.DoubleVar(root)
-    end_angle_label = tk.Label(root, text='Ending Angle (degrees)', font=('calibre', 10, 'bold'))
-    end_angle_entry = tk.Entry(root, textvariable=end_angle_var)
-    start_angle_label.grid(row=row_counter, column=0)
-    start_angle_entry.grid(row=row_counter, column=1)
-    end_angle_label.grid(row=row_counter, column=2)
-    end_angle_entry.grid(row=row_counter, column=3)
+    start_az_var = tk.DoubleVar(root, value=30)
+    start_az_label = tk.Label(root, text='Start Angle Azimuth (degrees)', font=('calibre', 10, 'bold'))
+    start_az_entry = tk.Entry(root, textvariable=start_az_var)
+    start_el_var = tk.DoubleVar(root, value=45)
+    start_el_label = tk.Label(root, text='Start Angle Elevation (degrees)', font=('calibre', 10, 'bold'))
+    start_el_entry = tk.Entry(root, textvariable=start_el_var)
+    start_az_label.grid(row=row_counter, column=0)
+    start_az_entry.grid(row=row_counter, column=1)
+    start_el_label.grid(row=row_counter, column=2)
+    start_el_entry.grid(row=row_counter, column=3)
     row_counter += 1
 
 
