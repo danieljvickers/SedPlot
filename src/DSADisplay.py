@@ -322,7 +322,6 @@ class DSADisplay:
                 self.graphicsSettings.frequencyDomainParameters.max_plot_frequency,
                 start_time_seconds,
                 channel_number=self.processingSettings.channel_number)
-        print(dsa_array)
         data = np.flip(dsa_array, 0)
 
         # adjust the height of the data
@@ -331,7 +330,6 @@ class DSADisplay:
             for j in range(len(data[i])):
                 if data[i][j] < 0:
                     data[i][j] = 0.
-        print(data)
 
         # create the mesh grid
         t = np.linspace(0,

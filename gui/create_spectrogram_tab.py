@@ -28,7 +28,7 @@ def create_spectrogram_tab(renderer, progress_object, root, start_time_var):
             if do_manual_angles:
                 pass
             else:
-                renderer.create_spectrogram_image(start_angle_var.get(), (30, 45)) 
+                renderer.create_spectrogram_image(start_time_var.get(), (30, 45)) 
 
         pass
 
