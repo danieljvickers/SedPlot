@@ -56,8 +56,13 @@ class DSADisplay:
             if sum(y_in_sum[:i]) > total_power * (self.sefPercent / 100.):  # check if we are over the SEF80
                 return np.fft.ifftshift(f)[i-1]  # return the SEF value at this point
 
+    def rotate_to_angle(self, ax, i, window, start_angle, end_angle):
+        i_frac = i / window
+        current_angle = start_angle * (1. - i_frac) + i_frac * end_angle
+        ax.view_init(elev=current_angle[0], azim=current_angle[1])
 
-    def get_spectrogram_animation_script(start_angle, end_angle, repeat=False):
+
+    def get_spectrogram_animation_script(self, start_angle, stop_angle, repeat=False):
         script = [
             {
                 "function":"rotate",
@@ -96,7 +101,7 @@ class DSADisplay:
 
 
     # main loop which renders the plots
-    def create_dsa_animation(self, start_time_min=0,tk_progress_bar=None, ):
+    def create_dsa_animation(self, start_time_min=0,tk_progress_bar=None):
         
         if self.do_save_animation and self.outputFileName == '':
             self.external_broadcast('Requested to save, but no output filename set.', 'error')
@@ -338,15 +343,17 @@ class DSADisplay:
         self.external_broadcast("Image Generated", "success")
 
 
-    def create_spectrogram_animation(self, time_min, start_angle, end_anlge, repeat=False, height_floor=-10):
+    def create_spectrogram_animation(self, time_min, start_angle, end_angle, repeat=False, height_floor=-10, tk_progress_bar=None):
         # set up the animation variables and function
-        self.get_spectrogram_animation_script(start_angle, stop_angle, repeat=False)
-        def run_animation(i):
+        # TODO :: Add an ability to control the rotation speed. Angles/second seem like a good unit
+        script = self.get_spectrogram_animation_script(start_angle, end_angle, repeat=repeat)
+        def run_spec_animation(i):
+            nonlocal script
             for scene in script:
                 if scene["begin"] <= i <= scene['end']:
                     if scene['function'] == 'rotate':
                         window = scene['end'] - scene['begin']
-                        rotate_to_angle(ax, i - scene['begin'], window, scene['start'], scene['stop'])
+                        self.rotate_to_angle(ax, i - scene['begin'], window, scene['start'], scene['stop'])
                     break
 
         time_seconds = time_min * 60
@@ -395,10 +402,34 @@ class DSADisplay:
         plt.ylabel('frequency (Hz)', fontsize=self.graphicsSettings.renderSettings.font_size)
         ax.set_zlabel('power (dB)', fontsize=self.graphicsSettings.renderSettings.font_size)
 
-        # set the view angle and save
-        ax.view_init(elev=angle[0], azim=angle[1])
-        plt.savefig(self.outputFileName)
-        self.external_broadcast("Image Generated", 'success')
+        # set the view angle and total frame amount
+        ax.view_init(elev=start_angle[0], azim=start_angle[1])
+        total_frames = script[-1]["end"]+1
+
+        # start the animation
+        fig = plt.gcf()
+        ani = animation.FuncAnimation(fig, run_spec_animation, repeat=False, frames=total_frames, interval=30)
+
+        file_ending = self.get_ouput_file_ending()
+        writer = None
+        if file_ending == 'gif':
+            writer = animation.PillowWriter(fps=self.graphicsSettings.renderSettings.fps, metadata=dict(artist='Daniel J. Vickers'), bitrate=-1)
+        elif file_ending == 'mp4':
+            writer = animation.FFMpegWriter(fps=self.graphicsSettings.renderSettings.fps) #, extra_args=['-vcodec', 'libx264'])
+        else:
+            self.external_broadcast("ERROR: {file_ending} is not a valid output file format for animations", 'except')
+            return
+
+        self.external_broadcast(f"Saving Initial Animation to {self.outputFileName}")
+
+        if not tk_progress_bar:  # uses tqdm if there is no external progress bar in the GUI
+            with tqdm(total=total_frames, desc='Saving video') as progress_bar:
+                ani.save(self.outputFileName, writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=lambda i, n: progress_bar.update(1))
+        else:
+            tk_progress_bar.set_bar_max(total_frames)
+            ani.save(self.outputFileName, writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=tk_progress_bar.update_bar)
+        self.external_broadcast("Complete", 'success')
+        return
 
     
     def create_spectrogram_image(self, time_min, angle=(30, 45), height_floor=-10):

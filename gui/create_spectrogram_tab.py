@@ -19,17 +19,12 @@ def create_spectrogram_tab(renderer, progress_object, root, start_time_var):
         renderer.graphicsSettings.frequencyDomainParameters.max_db_power = 65
         
         file_ending = renderer.get_ouput_file_ending()
+        start_angle = (start_el_var.get(), start_az_var.get())
         if file_ending in ('mp4', 'gif'):
-            if do_manual_angles:
-                pass
-            else:
-                pass # renderer.create_spectrogram_animation()
+            end_angle = (end_el_var.get(), end_az_var.get())
+            renderer.create_spectrogram_animation(start_time_var.get(), start_angle, end_angle, repeat=False, tk_progress_bar=progress_object)
         elif file_ending in ('png', 'jpg', 'pdf', 'svg'):
-            if do_manual_angles:
-                pass
-            else:
-                angle = (start_az_var.get(), start_el_var.get())
-                renderer.create_spectrogram_image(start_time_var.get(), angle) 
+            renderer.create_spectrogram_image(start_time_var.get(), start_angle) 
 
         pass
 
