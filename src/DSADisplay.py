@@ -55,7 +55,36 @@ class DSADisplay:
         for i in range(len(y_in_sum)):
             if sum(y_in_sum[:i]) > total_power * (self.sefPercent / 100.):  # check if we are over the SEF80
                 return np.fft.ifftshift(f)[i-1]  # return the SEF value at this point
-            
+
+
+    def get_spectrogram_animation_script(start_angle, end_angle, repeat=False):
+        script = [
+            {
+                "function":"rotate",
+                "begin": 0,
+                "end": 120,
+                "start": np.array(start_angle),
+                "stop": np.array(stop_angle)
+            }
+        ]
+        if not repeat:
+            script = script + [
+                {
+                    "function":"rotate",
+                    "begin": 180,
+                    "end": 300,
+                    "start": np.array(stop_angle),
+                    "stop": np.array(start_angle)
+                },
+                {
+                    "function": "pause",
+                    "begin": 301,
+                    "end": 360
+                }
+            ]
+        return script
+
+    
     def external_broadcast(self, msg, log_level='info'):
         if self.broadcaster:
             self.broadcaster.broadcast(msg, log_level)
@@ -309,18 +338,77 @@ class DSADisplay:
         self.external_broadcast("Image Generated", "success")
 
 
-    def create_spectrogram_animation(start_angle, stop_angle, time, repeat=False, height_floor=-20):
-        pass
+    def create_spectrogram_animation(self, time_min, start_angle, end_anlge, repeat=False, height_floor=-10):
+        # set up the animation variables and function
+        self.get_spectrogram_animation_script(start_angle, stop_angle, repeat=False)
+        def run_animation(i):
+            for scene in script:
+                if scene["begin"] <= i <= scene['end']:
+                    if scene['function'] == 'rotate':
+                        window = scene['end'] - scene['begin']
+                        rotate_to_angle(ax, i - scene['begin'], window, scene['start'], scene['stop'])
+                    break
 
-    
-    def create_spectrogram_image(self, start_time_min, angle=(30, 45), height_floor=-10):
-        start_time_seconds = start_time_min * 60
+        time_seconds = time_min * 60
         # fetch the EEG data
         dsa_array = self.eegData.get_dsa_frame(
                 self.processingSettings.T_fast, 
                 self.processingSettings.T_slow,
                 self.graphicsSettings.frequencyDomainParameters.max_plot_frequency,
-                start_time_seconds,
+                time_seconds,
+                channel_number=self.processingSettings.channel_number)
+        data = np.flip(dsa_array, 0)
+
+        # adjust the height of the data
+        data = data - (self.graphicsSettings.frequencyDomainParameters.min_db_power + height_floor)
+        for i in range(len(data)):
+            for j in range(len(data[i])):
+                if data[i][j] < 0:
+                    data[i][j] = 0.
+
+        # create the mesh grid
+        t = np.linspace(0,
+            self.processingSettings.T_slow,
+            int(self.processingSettings.T_slow / self.processingSettings.T_fast) ) / 60.
+        f = np.linspace(0,
+            self.graphicsSettings.frequencyDomainParameters.max_plot_frequency,
+            int(self.graphicsSettings.frequencyDomainParameters.max_plot_frequency * self.processingSettings.T_fast) )
+        T, F = np.meshgrid(t, f)
+
+         # Create vertices
+        vertices = np.zeros((len(t) * len(f), 3))
+        vertices[:, 0] = T.ravel()
+        vertices[:, 1] = F.ravel()
+        vertices[:, 2] = data.ravel()
+
+        # create the image
+        ax = plt.figure(figsize=self.graphicsSettings.renderSettings.figure_size,
+            dpi=self.graphicsSettings.renderSettings.dpi).add_subplot(projection='3d')
+        self.external_broadcast("Plotting Triangle Mesh", "info")
+        ax.plot_trisurf(T.ravel(), F.ravel(), data.ravel(), 
+                        cmap='jet',
+                        vmin=0,
+                        vmax=self.graphicsSettings.frequencyDomainParameters.max_db_power - 
+                            self.graphicsSettings.frequencyDomainParameters.min_db_power - height_floor,
+                        lw=0)
+        plt.xlabel('time (min)', fontsize=self.graphicsSettings.renderSettings.font_size)
+        plt.ylabel('frequency (Hz)', fontsize=self.graphicsSettings.renderSettings.font_size)
+        ax.set_zlabel('power (dB)', fontsize=self.graphicsSettings.renderSettings.font_size)
+
+        # set the view angle and save
+        ax.view_init(elev=angle[0], azim=angle[1])
+        plt.savefig(self.outputFileName)
+        self.external_broadcast("Image Generated", 'success')
+
+    
+    def create_spectrogram_image(self, time_min, angle=(30, 45), height_floor=-10):
+        time_seconds = _time_min * 60
+        # fetch the EEG data
+        dsa_array = self.eegData.get_dsa_frame(
+                self.processingSettings.T_fast, 
+                self.processingSettings.T_slow,
+                self.graphicsSettings.frequencyDomainParameters.max_plot_frequency,
+                time_seconds,
                 channel_number=self.processingSettings.channel_number)
         data = np.flip(dsa_array, 0)
 

@@ -35,7 +35,7 @@ def create_spectrogram_tab(renderer, progress_object, root, start_time_var):
 
     row_counter = 0
 
-
+    # variables for the starting view angle
     start_az_var = tk.DoubleVar(root, value=30)
     start_az_label = tk.Label(root, text='Start Angle Azimuth (degrees)', font=('calibre', 10, 'bold'))
     start_az_entry = tk.Entry(root, textvariable=start_az_var)
@@ -46,6 +46,18 @@ def create_spectrogram_tab(renderer, progress_object, root, start_time_var):
     start_az_entry.grid(row=row_counter, column=1)
     start_el_label.grid(row=row_counter, column=2)
     start_el_entry.grid(row=row_counter, column=3)
+    row_counter += 1
+
+    end_az_var = tk.DoubleVar(root, value=0)
+    end_az_label = tk.Label(root, text='End Angle Azimuth (degrees)', font=('calibre', 10, 'bold'))
+    end_az_entry = tk.Entry(root, textvariable=end_az_var)
+    end_el_var = tk.DoubleVar(root, value=0)
+    end_el_label = tk.Label(root, text='End Angle Elevation (degrees)', font=('calibre', 10, 'bold'))
+    end_el_entry = tk.Entry(root, textvariable=end_el_var)
+    end_az_label.grid(row=row_counter, column=0)
+    end_az_entry.grid(row=row_counter, column=1)
+    end_el_label.grid(row=row_counter, column=2)
+    end_el_entry.grid(row=row_counter, column=3)
     row_counter += 1
 
 
