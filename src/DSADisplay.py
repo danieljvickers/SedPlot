@@ -61,34 +61,6 @@ class DSADisplay:
         current_angle = start_angle * (1. - i_frac) + i_frac * end_angle
         ax.view_init(elev=current_angle[0], azim=current_angle[1])
 
-
-    def get_spectrogram_animation_script(self, start_angle, stop_angle, repeat=False):
-        script = [
-            {
-                "function":"rotate",
-                "begin": 0,
-                "end": 120,
-                "start": np.array(start_angle),
-                "stop": np.array(stop_angle)
-            }
-        ]
-        if not repeat:
-            script = script + [
-                {
-                    "function":"rotate",
-                    "begin": 180,
-                    "end": 300,
-                    "start": np.array(stop_angle),
-                    "stop": np.array(start_angle)
-                },
-                {
-                    "function": "pause",
-                    "begin": 301,
-                    "end": 360
-                }
-            ]
-        return script
-
     
     def external_broadcast(self, msg, log_level='info'):
         if self.broadcaster:
@@ -343,10 +315,9 @@ class DSADisplay:
         self.external_broadcast("Image Generated", "success")
 
 
-    def create_spectrogram_animation(self, time_min, start_angle, end_angle, repeat=False, height_floor=-10, tk_progress_bar=None):
+    def create_spectrogram_animation(self, time_min, script, height_floor=-10, tk_progress_bar=None):
         # set up the animation variables and function
         # TODO :: Add an ability to control the rotation speed. Angles/second seem like a good unit
-        script = self.get_spectrogram_animation_script(start_angle, end_angle, repeat=repeat)
         def run_spec_animation(i):
             nonlocal script
             for scene in script:
@@ -403,6 +374,7 @@ class DSADisplay:
         ax.set_zlabel('power (dB)', fontsize=self.graphicsSettings.renderSettings.font_size)
 
         # set the view angle and total frame amount
+        start_angle = script[0]["start"]
         ax.view_init(elev=start_angle[0], azim=start_angle[1])
         total_frames = script[-1]["end"]+1
 

@@ -10,9 +10,12 @@ import sys
 import shutil
 import subprocess
 
+# math
+import numpy as np
+
 TK_WIDTH = 75
 
-def create_spectrogram_tab(renderer, progress_object, root, start_time_var):
+def create_spectrogram_tab(renderer, progress_object, root, start_time_var):    
     def submit_spectrogram():
         do_manual_angles = False
         renderer.graphicsSettings.frequencyDomainParameters.min_db_power = 20
@@ -22,11 +25,41 @@ def create_spectrogram_tab(renderer, progress_object, root, start_time_var):
         start_angle = (start_el_var.get(), start_az_var.get())
         if file_ending in ('mp4', 'gif'):
             end_angle = (end_el_var.get(), end_az_var.get())
-            renderer.create_spectrogram_animation(start_time_var.get(), start_angle, end_angle, repeat=False, tk_progress_bar=progress_object)
+            script = get_spectrogram_animation_script(start_angle, end_angle, reset=do_angle_reset_var.get())
+            renderer.create_spectrogram_animation(start_time_var.get(), script,
+                tk_progress_bar=progress_object, height_floor=height_var.get())
         elif file_ending in ('png', 'jpg', 'pdf', 'svg'):
-            renderer.create_spectrogram_image(start_time_var.get(), start_angle) 
+            renderer.create_spectrogram_image(start_time_var.get(), start_angle, height_floor=height_var.get()) 
 
         pass
+
+
+    def get_spectrogram_animation_script(start_angle, stop_angle, reset=True):
+        script = [
+            {
+                "function":"rotate",
+                "begin": 0,
+                "end": 120,
+                "start": np.array(start_angle),
+                "stop": np.array(stop_angle)
+            }
+        ]
+        if reset:
+            script = script + [
+                {
+                    "function":"rotate",
+                    "begin": 180,
+                    "end": 300,
+                    "start": np.array(stop_angle),
+                    "stop": np.array(start_angle)
+                },
+                {
+                    "function": "pause",
+                    "begin": 301,
+                    "end": 360
+                }
+            ]
+        return script
 
     row_counter = 0
 
@@ -43,10 +76,10 @@ def create_spectrogram_tab(renderer, progress_object, root, start_time_var):
     start_el_entry.grid(row=row_counter, column=3)
     row_counter += 1
 
-    end_az_var = tk.DoubleVar(root, value=0)
+    end_az_var = tk.DoubleVar(root, value=-89.9)
     end_az_label = tk.Label(root, text='End Angle Azimuth (degrees)', font=('calibre', 10, 'bold'))
     end_az_entry = tk.Entry(root, textvariable=end_az_var)
-    end_el_var = tk.DoubleVar(root, value=0)
+    end_el_var = tk.DoubleVar(root, value=89.9)
     end_el_label = tk.Label(root, text='End Angle Elevation (degrees)', font=('calibre', 10, 'bold'))
     end_el_entry = tk.Entry(root, textvariable=end_el_var)
     end_az_label.grid(row=row_counter, column=0)
@@ -55,6 +88,22 @@ def create_spectrogram_tab(renderer, progress_object, root, start_time_var):
     end_el_entry.grid(row=row_counter, column=3)
     row_counter += 1
 
+    # Variable that controls the plot heioght
+    height_var = tk.DoubleVar(root, value=10)
+    height_label = tk.Label(root, text="Floor Height", font=('calibre', 10, 'bold'))
+    height_entry = tk.Entry(root, textvariable=height_var)
+    height_label.grid(row=row_counter, column=0)
+    height_entry.grid(row=row_counter, column=1)
+    row_counter += 1
+
+    # Variable that dtermines if we loop the animation or not
+    do_angle_reset_var = tk.BooleanVar(root)
+    do_angle_reset_checkbox = tk.Checkbutton(root, text="Reset Angle", variable=do_angle_reset_var, onvalue=True, offvalue=False)
+    do_angle_reset_checkbox.grid(row=row_counter, column=1)
+    # do_angle_reset_checkbox.select()
+    do_angle_reset_checkbox.config(fg="white", 
+                   selectcolor="blue", relief="raised")
+    row_counter += 1
 
     spectrogram_button = tk.Button(root, text="Generate 3D Spectrogram", command=submit_spectrogram)
     spectrogram_button.grid(row=row_counter, column=0,
