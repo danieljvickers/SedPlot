@@ -25,7 +25,7 @@ def create_spectrogram_tab(renderer, progress_object, root, start_time_var):
         start_angle = (start_el_var.get(), start_az_var.get())
         if file_ending in ('mp4', 'gif'):
             end_angle = (end_el_var.get(), end_az_var.get())
-            script = get_spectrogram_animation_script(start_angle, end_angle, reset=do_angle_reset_var.get())
+            script = get_spectrogram_animation_script(start_angle, end_angle, reset=(not dont_angle_reset_var.get()))
             renderer.create_spectrogram_animation(start_time_var.get(), script,
                 tk_progress_bar=progress_object, height_floor=height_var.get())
         elif file_ending in ('png', 'jpg', 'pdf', 'svg'):
@@ -97,12 +97,10 @@ def create_spectrogram_tab(renderer, progress_object, root, start_time_var):
     row_counter += 1
 
     # Variable that dtermines if we loop the animation or not
-    do_angle_reset_var = tk.BooleanVar(root)
-    do_angle_reset_checkbox = tk.Checkbutton(root, text="Reset Angle", variable=do_angle_reset_var, onvalue=True, offvalue=False)
-    do_angle_reset_checkbox.grid(row=row_counter, column=1)
+    dont_angle_reset_var = tk.BooleanVar(root)
+    dont_angle_reset_checkbox = tk.Checkbutton(root, text="No Angle Reset", variable=dont_angle_reset_var, onvalue=True, offvalue=False)
+    dont_angle_reset_checkbox.grid(row=row_counter, column=1)
     # do_angle_reset_checkbox.select()
-    do_angle_reset_checkbox.config(fg="white", 
-                   selectcolor="blue", relief="raised")
     row_counter += 1
 
     spectrogram_button = tk.Button(root, text="Generate 3D Spectrogram", command=submit_spectrogram)
