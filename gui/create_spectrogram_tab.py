@@ -97,6 +97,7 @@ def create_spectrogram_tab(renderer, progress_object, root, start_time_var):
     row_counter += 1
 
     # Variable that dtermines if we loop the animation or not
+    # TODO :: For some reason this does not want to default to selected on MAC. See how to resolve this.
     dont_angle_reset_var = tk.BooleanVar(root)
     dont_angle_reset_checkbox = tk.Checkbutton(root, text="No Angle Reset", variable=dont_angle_reset_var, onvalue=True, offvalue=False)
     dont_angle_reset_checkbox.grid(row=row_counter, column=1)
