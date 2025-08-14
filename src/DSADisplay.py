@@ -55,7 +55,13 @@ class DSADisplay:
         for i in range(len(y_in_sum)):
             if sum(y_in_sum[:i]) > total_power * (self.sefPercent / 100.):  # check if we are over the SEF80
                 return np.fft.ifftshift(f)[i-1]  # return the SEF value at this point
-            
+
+    def rotate_to_angle(self, ax, i, window, start_angle, end_angle):
+        i_frac = i / window
+        current_angle = start_angle * (1. - i_frac) + i_frac * end_angle
+        ax.view_init(elev=current_angle[0], azim=current_angle[1])
+
+    
     def external_broadcast(self, msg, log_level='info'):
         if self.broadcaster:
             self.broadcaster.broadcast(msg, log_level)
@@ -63,11 +69,11 @@ class DSADisplay:
             print(msg)
 
     def get_ouput_file_ending(self):
-        return self.outputFileName.split('.')[-1]
+        return self.outputFileName.split('.')[-1].lower()
 
 
     # main loop which renders the plots
-    def create_dsa_animation(self, start_time_min=0,tk_progress_bar=None, ):
+    def create_dsa_animation(self, start_time_min=0,tk_progress_bar=None):
         
         if self.do_save_animation and self.outputFileName == '':
             self.external_broadcast('Requested to save, but no output filename set.', 'error')
@@ -307,3 +313,145 @@ class DSADisplay:
         plt.tight_layout()
         plt.savefig(self.outputFileName, dpi=self.graphicsSettings.renderSettings.dpi)
         self.external_broadcast("Image Generated", "success")
+
+
+    def create_spectrogram_animation(self, time_min, script, height_floor=-10, tk_progress_bar=None):
+        # set up the animation variables and function
+        # TODO :: Add an ability to control the rotation speed. Angles/second seem like a good unit
+        def run_spec_animation(i):
+            nonlocal script
+            for scene in script:
+                if scene["begin"] <= i <= scene['end']:
+                    if scene['function'] == 'rotate':
+                        window = scene['end'] - scene['begin']
+                        self.rotate_to_angle(ax, i - scene['begin'], window, scene['start'], scene['stop'])
+                    break
+
+        time_seconds = time_min * 60
+        # fetch the EEG data
+        dsa_array = self.eegData.get_dsa_frame(
+                self.processingSettings.T_fast, 
+                self.processingSettings.T_slow,
+                self.graphicsSettings.frequencyDomainParameters.max_plot_frequency,
+                time_seconds,
+                channel_number=self.processingSettings.channel_number)
+        data = np.flip(dsa_array, 0)
+
+        # adjust the height of the data
+        data = data - (self.graphicsSettings.frequencyDomainParameters.min_db_power + height_floor)
+        for i in range(len(data)):
+            for j in range(len(data[i])):
+                if data[i][j] < 0:
+                    data[i][j] = 0.
+
+        # create the mesh grid
+        t = np.linspace(0,
+            self.processingSettings.T_slow,
+            int(self.processingSettings.T_slow / self.processingSettings.T_fast) ) / 60.
+        f = np.linspace(0,
+            self.graphicsSettings.frequencyDomainParameters.max_plot_frequency,
+            int(self.graphicsSettings.frequencyDomainParameters.max_plot_frequency * self.processingSettings.T_fast) )
+        T, F = np.meshgrid(t, f)
+
+         # Create vertices
+        vertices = np.zeros((len(t) * len(f), 3))
+        vertices[:, 0] = T.ravel()
+        vertices[:, 1] = F.ravel()
+        vertices[:, 2] = data.ravel()
+
+        # create the image
+        ax = plt.figure(figsize=self.graphicsSettings.renderSettings.figure_size,
+            dpi=self.graphicsSettings.renderSettings.dpi).add_subplot(projection='3d')
+        self.external_broadcast("Plotting Triangle Mesh", "info")
+        ax.plot_trisurf(T.ravel(), F.ravel(), data.ravel(), 
+                        cmap='jet',
+                        vmin=0,
+                        vmax=self.graphicsSettings.frequencyDomainParameters.max_db_power - 
+                            self.graphicsSettings.frequencyDomainParameters.min_db_power - height_floor,
+                        lw=0)
+        plt.xlabel('time (min)', fontsize=self.graphicsSettings.renderSettings.font_size)
+        plt.ylabel('frequency (Hz)', fontsize=self.graphicsSettings.renderSettings.font_size)
+        ax.set_zlabel('power (dB)', fontsize=self.graphicsSettings.renderSettings.font_size)
+
+        # set the view angle and total frame amount
+        start_angle = script[0]["start"]
+        ax.view_init(elev=start_angle[0], azim=start_angle[1])
+        total_frames = script[-1]["end"]+1
+
+        # start the animation
+        fig = plt.gcf()
+        ani = animation.FuncAnimation(fig, run_spec_animation, repeat=False, frames=total_frames, interval=30)
+
+        file_ending = self.get_ouput_file_ending()
+        writer = None
+        if file_ending == 'gif':
+            writer = animation.PillowWriter(fps=self.graphicsSettings.renderSettings.fps, metadata=dict(artist='Daniel J. Vickers'), bitrate=-1)
+        elif file_ending == 'mp4':
+            writer = animation.FFMpegWriter(fps=self.graphicsSettings.renderSettings.fps) #, extra_args=['-vcodec', 'libx264'])
+        else:
+            self.external_broadcast("ERROR: {file_ending} is not a valid output file format for animations", 'except')
+            return
+
+        self.external_broadcast(f"Saving Initial Animation to {self.outputFileName}")
+
+        if not tk_progress_bar:  # uses tqdm if there is no external progress bar in the GUI
+            with tqdm(total=total_frames, desc='Saving video') as progress_bar:
+                ani.save(self.outputFileName, writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=lambda i, n: progress_bar.update(1))
+        else:
+            tk_progress_bar.set_bar_max(total_frames)
+            ani.save(self.outputFileName, writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=tk_progress_bar.update_bar)
+        self.external_broadcast("Complete", 'success')
+        return
+
+    
+    def create_spectrogram_image(self, time_min, angle=(30, 45), height_floor=-10):
+        time_seconds = _time_min * 60
+        # fetch the EEG data
+        dsa_array = self.eegData.get_dsa_frame(
+                self.processingSettings.T_fast, 
+                self.processingSettings.T_slow,
+                self.graphicsSettings.frequencyDomainParameters.max_plot_frequency,
+                time_seconds,
+                channel_number=self.processingSettings.channel_number)
+        data = np.flip(dsa_array, 0)
+
+        # adjust the height of the data
+        data = data - (self.graphicsSettings.frequencyDomainParameters.min_db_power + height_floor)
+        for i in range(len(data)):
+            for j in range(len(data[i])):
+                if data[i][j] < 0:
+                    data[i][j] = 0.
+
+        # create the mesh grid
+        t = np.linspace(0,
+            self.processingSettings.T_slow,
+            int(self.processingSettings.T_slow / self.processingSettings.T_fast) ) / 60.
+        f = np.linspace(0,
+            self.graphicsSettings.frequencyDomainParameters.max_plot_frequency,
+            int(self.graphicsSettings.frequencyDomainParameters.max_plot_frequency * self.processingSettings.T_fast) )
+        T, F = np.meshgrid(t, f)
+
+         # Create vertices
+        vertices = np.zeros((len(t) * len(f), 3))
+        vertices[:, 0] = T.ravel()
+        vertices[:, 1] = F.ravel()
+        vertices[:, 2] = data.ravel()
+
+        # create the image
+        ax = plt.figure(figsize=self.graphicsSettings.renderSettings.figure_size,
+            dpi=self.graphicsSettings.renderSettings.dpi).add_subplot(projection='3d')
+        self.external_broadcast("Plotting Triangle Mesh", "info")
+        ax.plot_trisurf(T.ravel(), F.ravel(), data.ravel(), 
+                        cmap='jet',
+                        vmin=0,
+                        vmax=self.graphicsSettings.frequencyDomainParameters.max_db_power - 
+                            self.graphicsSettings.frequencyDomainParameters.min_db_power - height_floor,
+                        lw=0)
+        plt.xlabel('time (min)', fontsize=self.graphicsSettings.renderSettings.font_size)
+        plt.ylabel('frequency (Hz)', fontsize=self.graphicsSettings.renderSettings.font_size)
+        ax.set_zlabel('power (dB)', fontsize=self.graphicsSettings.renderSettings.font_size)
+
+        # set the view angle and save
+        ax.view_init(elev=angle[0], azim=angle[1])
+        plt.savefig(self.outputFileName)
+        self.external_broadcast("Image Generated", 'success')

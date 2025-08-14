@@ -39,6 +39,10 @@ class EEGArray:
                     self.data[channel_number] = np.concatenate((self.data[channel_number], signals[channel_number]))
             except:
                 print(f"Unable to load file: {file}")
+        
+        # renormalize
+        # for i in range(len(self.data)):
+        #     self.data[i] = self.data[i] # * 1e-6
     
     
     def get_end_frame_number(self, num_samples):
