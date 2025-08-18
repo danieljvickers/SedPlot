@@ -5,9 +5,7 @@ class TimeDomainParameters:
 
 class FrequencyDomainParameters:
     min_db_power = -40
-    # min_db_power = 20
     max_db_power = 5
-    # max_db_power = 65
     outside_db_to_plot = 10
     max_plot_frequency = 40
     do_frequency_domain_plot = False
