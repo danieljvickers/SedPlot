@@ -315,7 +315,7 @@ class DSADisplay:
         self.external_broadcast("Image Generated", "success")
 
 
-    def create_spectrogram_animation(self, time_min, script, height_floor=-10, tk_progress_bar=None):
+    def create_spectrogram_animation(self, time_min, script, height_floor=-10, tk_progress_bar=None, filter_size=1):
         # set up the animation variables and function
         # TODO :: Add an ability to control the rotation speed. Angles/second seem like a good unit
         def run_spec_animation(i):
@@ -336,6 +336,11 @@ class DSADisplay:
                 time_seconds,
                 channel_number=self.processingSettings.channel_number)
         data = np.flip(dsa_array, 0)
+
+        # apply a smoothing filter
+        if filter_size > 1:
+            data = ndimage.median_filter(data, size=(filter_size, 5*filter_size))
+            rows, cols = data.shape
 
         # adjust the height of the data
         data = data - (self.graphicsSettings.frequencyDomainParameters.min_db_power + height_floor)
@@ -404,7 +409,7 @@ class DSADisplay:
         return
 
     
-    def create_spectrogram_image(self, time_min, angle=(30, 45), height_floor=-10):
+    def create_spectrogram_image(self, time_min, angle=(30, 45), height_floor=-10, filter_size=1):
         time_seconds = _time_min * 60
         # fetch the EEG data
         dsa_array = self.eegData.get_dsa_frame(
@@ -414,6 +419,11 @@ class DSADisplay:
                 time_seconds,
                 channel_number=self.processingSettings.channel_number)
         data = np.flip(dsa_array, 0)
+
+        # apply a smoothing filter
+        if filter_size > 1:
+            data = ndimage.median_filter(data, size=(filter_size, 5*filter_size))
+            rows, cols = data.shape
 
         # adjust the height of the data
         data = data - (self.graphicsSettings.frequencyDomainParameters.min_db_power + height_floor)
@@ -493,7 +503,10 @@ class DSADisplay:
         self.external_broadcast("CSV Ouput Written", "success")
 
 
-    def create_stl_file(self, time_min, height_floor=-10):
+    def create_stl_file(self, time_min, height_floor=-10, filter_size=1):
+        if not (self.get_ouput_file_ending == 'stl'):
+            self.external_broadcast("Output file type is not STL. Error.", "error")
+
         time_seconds = _time_min * 60
         # fetch the EEG data
         dsa_array = self.eegData.get_dsa_frame(
@@ -503,6 +516,11 @@ class DSADisplay:
                 time_seconds,
                 channel_number=self.processingSettings.channel_number)
         data = np.flip(dsa_array, 0)
+
+        # apply a smoothing filter
+        if filter_size > 1:
+            data = ndimage.median_filter(data, size=(filter_size, 5*filter_size))
+            rows, cols = data.shape
 
         # adjust the height of the data
         data = data - (self.graphicsSettings.frequencyDomainParameters.min_db_power + height_floor)
@@ -526,13 +544,25 @@ class DSADisplay:
         vertices[:, 1] = F.ravel()
         vertices[:, 2] = data.ravel()
 
-        # create the image
-        ax = plt.figure(figsize=self.graphicsSettings.renderSettings.figure_size,
-            dpi=self.graphicsSettings.renderSettings.dpi).add_subplot(projection='3d')
-        self.external_broadcast("Plotting Triangle Mesh", "info")
-        ax.plot_trisurf(T.ravel(), F.ravel(), data.ravel(), 
-                        cmap='jet',
-                        vmin=0,
-                        vmax=self.graphicsSettings.frequencyDomainParameters.max_db_power - 
-                            self.graphicsSettings.frequencyDomainParameters.min_db_power - height_floor,
-                        lw=0)
+        # Create faces (triangular mesh)
+        faces = []
+        for i in range(rows - 1):
+            for j in range(cols - 1):
+                # Define corners of the rectangle
+                p1 = i * cols + j
+                p2 = p1 + 1
+                p3 = p1 + cols
+                p4 = p3 + 1
+                # Create two triangles
+                faces.append([p1, p2, p3])
+                faces.append([p2, p4, p3])
+        faces = np.array(faces)
+
+        # Create the mesh
+        terrain_mesh = mesh.Mesh(np.zeros(faces.shape[0], dtype=mesh.Mesh.dtype))
+        for i, f in enumerate(faces):
+            for j in range(3):
+                terrain_mesh.vectors[i][j] = vertices[f[j], :]
+
+        # Save to STL
+        terrain_mesh.save(self.outputFileName)
