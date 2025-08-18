@@ -18,31 +18,13 @@ def create_dsa_tab(renderer, progress_object, dsa_tab, start_time_var):
     def submit_dsa():
         # create the DSA display and fetch values
         if not renderer.eegData:
-            raise 'No Input Data Selected'  # TODO :: have this publish to the GUI
-        renderer.do_save_animation = True
-        renderer.graphicsSettings.frequencyDomainParameters.min_db_power = int(min_db_variable.get())
-        renderer.graphicsSettings.frequencyDomainParameters.max_db_power = int(max_db_variable.get())
-        renderer.graphicsSettings.renderSettings.font_size = axis_font_var.get()
-        renderer.graphicsSettings.renderSettings.tick_size = tick_font_var.get()
-        # TODO :: Fetch a particular slow_time starting/ending value
-
-        # graphs graphical resolutoin settings
-        if do_sef_var.get():
-            renderer.do_plot_spectral_edge_on_spectrogram = True
-        if do_audio_var.get():
-            renderer.do_add_audio_to_animation = True
-        if do_frequency_spectrum_var.get():
-            renderer.graphicsSettings.frequencyDomainParameters.do_frequency_domain_plot = True
-        if do_time_domain_var.get():
-            renderer.graphicsSettings.timeDomainParameters.do_time_domain_plot = True
+            renderer.external_broadcast('No Input Data Selected', 'error')
 
         file_ending = renderer.get_ouput_file_ending().lower()
-        if file_ending in ('mp4', 'gif'):
-            renderer.create_dsa_animation(tk_progress_bar=progress_object, start_time_min=start_time_var.get())
-        elif file_ending in ('png', 'jpg', 'svg', 'pdf'):
-            renderer.create_dsa_image(start_time_var.get())
+        if file_ending in ('csv'):
+            renderer.create_csv_file(start_time_min=start_time_var.get())
         else:
-            renderer.external_broadcast(f"File ending '.{file_ending}' is not supported.", 'error')
+            renderer.external_broadcast(f"File ending '.{file_ending}' is not supported for this button. Try '.csv' instead.", 'error')
 
     # min and max dB inputs
     min_db_variable = tk.DoubleVar(value=renderer.graphicsSettings.frequencyDomainParameters.min_db_power)

@@ -455,3 +455,84 @@ class DSADisplay:
         ax.view_init(elev=angle[0], azim=angle[1])
         plt.savefig(self.outputFileName)
         self.external_broadcast("Image Generated", 'success')
+
+
+    def create_csv_file(self, time_min):
+        start_time_seconds = time * 60.
+        try:
+            dsa_array = self.eegData.get_dsa_frame(
+                self.processingSettings.T_fast, 
+                self.processingSettings.T_slow,
+                self.graphicsSettings.frequencyDomainParameters.max_plot_frequency,
+                start_time_seconds,
+                channel_number=self.processingSettings.channel_number)
+        except:
+            self.external_broadcast("Unable to generate DSA Frame. Consider Checking the Start Time.", "error")
+            return
+
+        # write the csv file out
+        if not (self.get_ouput_file_ending == 'csv'):
+            self.external_broadcast("Specified output file is not '.csv'. Error.", "error")
+            return
+        csv_file = open(self.outputFileName, 'w')
+
+        # write the time steps first
+        for i in range(int(self.processingSettings.T_slow / self.processingSettings.T_fast)):
+            current_time_min = self.processingSettings.T_slow * i / 60.
+            csv_file.write(f",{current_time_min}")
+        csv_file.write('\n')
+
+        for i in range(len(dsa_array)):
+            freq_index = len(dsa_array) - i
+            current_frequency = float(freq_index) / self.processingSettings.T_fast
+            csv_file.write(str(current_frequency))
+            for j in range(len(dsa_array[-i])):
+                csv_file.write(f",{dsa_array[-i][j]}")
+            if not (i == len(dsa_array) - 1):
+                csv_file.write('\n')
+        self.external_broadcast("CSV Ouput Written", "success")
+
+
+    def create_stl_file(self, time_min, height_floor=-10):
+        time_seconds = _time_min * 60
+        # fetch the EEG data
+        dsa_array = self.eegData.get_dsa_frame(
+                self.processingSettings.T_fast, 
+                self.processingSettings.T_slow,
+                self.graphicsSettings.frequencyDomainParameters.max_plot_frequency,
+                time_seconds,
+                channel_number=self.processingSettings.channel_number)
+        data = np.flip(dsa_array, 0)
+
+        # adjust the height of the data
+        data = data - (self.graphicsSettings.frequencyDomainParameters.min_db_power + height_floor)
+        for i in range(len(data)):
+            for j in range(len(data[i])):
+                if data[i][j] < 0:
+                    data[i][j] = 0.
+
+        # create the mesh grid
+        t = np.linspace(0,
+            self.processingSettings.T_slow,
+            int(self.processingSettings.T_slow / self.processingSettings.T_fast) ) / 60.
+        f = np.linspace(0,
+            self.graphicsSettings.frequencyDomainParameters.max_plot_frequency,
+            int(self.graphicsSettings.frequencyDomainParameters.max_plot_frequency * self.processingSettings.T_fast) )
+        T, F = np.meshgrid(t, f)
+
+         # Create vertices
+        vertices = np.zeros((len(t) * len(f), 3))
+        vertices[:, 0] = T.ravel()
+        vertices[:, 1] = F.ravel()
+        vertices[:, 2] = data.ravel()
+
+        # create the image
+        ax = plt.figure(figsize=self.graphicsSettings.renderSettings.figure_size,
+            dpi=self.graphicsSettings.renderSettings.dpi).add_subplot(projection='3d')
+        self.external_broadcast("Plotting Triangle Mesh", "info")
+        ax.plot_trisurf(T.ravel(), F.ravel(), data.ravel(), 
+                        cmap='jet',
+                        vmin=0,
+                        vmax=self.graphicsSettings.frequencyDomainParameters.max_db_power - 
+                            self.graphicsSettings.frequencyDomainParameters.min_db_power - height_floor,
+                        lw=0)
