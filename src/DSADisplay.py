@@ -524,7 +524,7 @@ class DSADisplay:
         csv_file = open(self.outputFileName, 'w')
 
         # write the time steps first
-        csv_file.write('Time (s), Amplitude ($uV$)')
+        csv_file.write('Time (s), Amplitude (uV)\n')
         for i in range(int(self.processingSettings.T_slow / self.processingSettings.T_fast)):
             csv_file.write(f"{self.processingSettings.T_fast * i},{data_to_write[i]}")
             if not (i == int(self.processingSettings.T_slow / self.processingSettings.T_fast) - 1):
