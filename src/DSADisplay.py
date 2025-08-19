@@ -467,7 +467,7 @@ class DSADisplay:
         self.external_broadcast("Image Generated", 'success')
 
 
-    def create_csv_file(self, start_time_min):
+    def create_dsa_csv_file(self, start_time_min):
         start_time_seconds = start_time_min * 60.
         try:
             dsa_array = self.eegData.get_dsa_frame(
@@ -503,6 +503,32 @@ class DSADisplay:
             if not (i == len(dsa_array) - 1):
                 csv_file.write('\n')
         self.external_broadcast("CSV Ouput Written", "success")
+
+
+    def create_time_csv_file(self, start_time_min):
+        start_time_seconds = start_time_min * 60.
+        start_index = self.eegData.sampleRate * start_time_seconds
+        if 0 >= start_index or start_index >= len(self.eegData.data[self.processingSettings.channel_number]):
+            self.external_broadcast("Requested start time is outside the length of the input files.", 'error')
+            return
+        end_index = self.eegDa.sampleRate * (start_time_seconds + self.processingSettings.T_slow)
+        if 0 >= start_end_indexindex or end_index >= len(self.eegData.data[self.processingSettings.channel_number]):
+            self.external_broadcast("Requested timending time is outside the length of the input files.", 'error')
+            return
+        data_to_write = self.eegData.data[self.processingSettings.channel_number][start_index:end_index]
+
+        # write the csv file out
+        if not (self.get_ouput_file_ending() == 'csv'):
+            self.external_broadcast("Specified output file is not '.csv'. Error.", "error")
+            return
+        csv_file = open(self.outputFileName, 'w')
+
+        # write the time steps first
+        csv_file.write('Time (s), Amplitude ($uV$)')
+        for i in range(int(self.processingSettings.T_slow / self.processingSettings.T_fast)):
+            csv_file.write(f"{self.processingSettings.T_fast * i},{data_to_write[i]}")
+            if not (i == int(self.processingSettings.T_slow / self.processingSettings.T_fast) - 1):
+                csv_file.write('\n')
 
 
     def create_stl_file(self, time_min, height_floor=-10, filter_size=1):
