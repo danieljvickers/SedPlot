@@ -18,8 +18,6 @@ TK_WIDTH = 75
 def create_spectrogram_tab(renderer, progress_object, root, start_time_var):    
     def submit_spectrogram():
         do_manual_angles = False
-        renderer.graphicsSettings.frequencyDomainParameters.min_db_power = 20
-        renderer.graphicsSettings.frequencyDomainParameters.max_db_power = 65
         
         file_ending = renderer.get_ouput_file_ending()
         start_angle = (start_el_var.get(), start_az_var.get())
@@ -27,9 +25,14 @@ def create_spectrogram_tab(renderer, progress_object, root, start_time_var):
             end_angle = (end_el_var.get(), end_az_var.get())
             script = get_spectrogram_animation_script(start_angle, end_angle, reset=(not dont_angle_reset_var.get()))
             renderer.create_spectrogram_animation(start_time_var.get(), script,
-                tk_progress_bar=progress_object, height_floor=height_var.get())
+                tk_progress_bar=progress_object, height_floor=-height_var.get(),
+                filter_size=smoothing_var.get())
         elif file_ending in ('png', 'jpg', 'pdf', 'svg'):
-            renderer.create_spectrogram_image(start_time_var.get(), start_angle, height_floor=height_var.get()) 
+            renderer.create_spectrogram_image(start_time_var.get(), start_angle,
+                height_floor=-height_var.get(), filter_size=smoothing_var.get())
+        elif file_ending in ('stl'):
+            renderer.create_stl_file(start_time_var.get(), height_floor=-height_var.get(),
+                filter_size=smoothing_var.get())
 
         pass
 
@@ -94,6 +97,13 @@ def create_spectrogram_tab(renderer, progress_object, root, start_time_var):
     height_entry = tk.Entry(root, textvariable=height_var)
     height_label.grid(row=row_counter, column=0)
     height_entry.grid(row=row_counter, column=1)
+
+    #add the smoothing radius
+    smoothing_var = tk.IntVar(root, value=0)
+    smoothing_label = tk.Label(root, text="Smoothing Radius", font=('calibre', 10, 'bold'))
+    smoothing_entry = tk.Entry(root, textvariable=smoothing_var)
+    smoothing_label.grid(row=row_counter, column=2)
+    smoothing_entry.grid(row=row_counter, column=3)
     row_counter += 1
 
     # Variable that dtermines if we loop the animation or not
