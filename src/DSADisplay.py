@@ -8,10 +8,10 @@ import moviepy as mp
 import numpy as np
 from scipy.io import wavfile
 import math
+from stl import mesh
 
 # basic os and gui management libraries
 import os
-# from tqdm.gui import tqdm
 from tqdm import tqdm
 
 # internal data structures
@@ -88,7 +88,7 @@ class DSADisplay:
 
             # handle the time-domain plotting case
             if self.graphicsSettings.timeDomainParameters.do_time_domain_plot:
-                fast_time_line.set_data(t, np.real(y))
+                fast_time_line.set_data(t, np.real(y) * 1e3)
 
             # handels the case of plotting the SEF graph
             y_f_linear = abs(np.fft.fftshift(np.fft.fft(y)))
@@ -315,7 +315,7 @@ class DSADisplay:
         self.external_broadcast("Image Generated", "success")
 
 
-    def create_spectrogram_animation(self, time_min, script, height_floor=-10, tk_progress_bar=None):
+    def create_spectrogram_animation(self, time_min, script, height_floor=-10, tk_progress_bar=None, filter_size=0):
         # set up the animation variables and function
         # TODO :: Add an ability to control the rotation speed. Angles/second seem like a good unit
         def run_spec_animation(i):
@@ -336,6 +336,11 @@ class DSADisplay:
                 time_seconds,
                 channel_number=self.processingSettings.channel_number)
         data = np.flip(dsa_array, 0)
+
+        # apply a smoothing filter
+        if filter_size > 0:
+            data = ndimage.median_filter(data, size=(filter_size, 5*filter_size))
+            rows, cols = data.shape
 
         # adjust the height of the data
         data = data - (self.graphicsSettings.frequencyDomainParameters.min_db_power + height_floor)
@@ -404,8 +409,8 @@ class DSADisplay:
         return
 
     
-    def create_spectrogram_image(self, time_min, angle=(30, 45), height_floor=-10):
-        time_seconds = _time_min * 60
+    def create_spectrogram_image(self, time_min, angle=(30, 45), height_floor=-10, filter_size=0):
+        time_seconds = time_min * 60
         # fetch the EEG data
         dsa_array = self.eegData.get_dsa_frame(
                 self.processingSettings.T_fast, 
@@ -414,6 +419,11 @@ class DSADisplay:
                 time_seconds,
                 channel_number=self.processingSettings.channel_number)
         data = np.flip(dsa_array, 0)
+
+        # apply a smoothing filter
+        if filter_size > 0:
+            data = ndimage.median_filter(data, size=(filter_size, 5*filter_size))
+            rows, cols = data.shape
 
         # adjust the height of the data
         data = data - (self.graphicsSettings.frequencyDomainParameters.min_db_power + height_floor)
@@ -443,7 +453,7 @@ class DSADisplay:
         self.external_broadcast("Plotting Triangle Mesh", "info")
         ax.plot_trisurf(T.ravel(), F.ravel(), data.ravel(), 
                         cmap='jet',
-                        vmin=0,
+                        vmin=-height_floor,
                         vmax=self.graphicsSettings.frequencyDomainParameters.max_db_power - 
                             self.graphicsSettings.frequencyDomainParameters.min_db_power - height_floor,
                         lw=0)
@@ -455,3 +465,135 @@ class DSADisplay:
         ax.view_init(elev=angle[0], azim=angle[1])
         plt.savefig(self.outputFileName)
         self.external_broadcast("Image Generated", 'success')
+
+
+    def create_dsa_csv_file(self, start_time_min):
+        start_time_seconds = start_time_min * 60.
+        try:
+            dsa_array = self.eegData.get_dsa_frame(
+                self.processingSettings.T_fast, 
+                self.processingSettings.T_slow,
+                self.graphicsSettings.frequencyDomainParameters.max_plot_frequency,
+                start_time_seconds,
+                channel_number=self.processingSettings.channel_number)
+        except:
+            self.external_broadcast("Unable to generate DSA Frame. Consider Checking the Start Time.", "error")
+            return
+
+        # write the csv file out
+        if not (self.get_ouput_file_ending() == 'csv'):
+            self.external_broadcast("Specified output file is not '.csv'. Error.", "error")
+            return
+        csv_file = open(self.outputFileName, 'w')
+
+        # write the time steps first
+        csv_file.write('Frequency (Hz) \\ Time (min)')
+        for i in range(int(self.processingSettings.T_slow / self.processingSettings.T_fast)):
+            current_time_min = self.processingSettings.T_fast * i / 60.
+            csv_file.write(f",{current_time_min}")
+        csv_file.write('\n')
+
+        # write the frequency on the left followed by the DSA numbers
+        for i in range(len(dsa_array)):
+            freq_index = len(dsa_array) - i
+            current_frequency = float(freq_index) / self.processingSettings.T_fast
+            csv_file.write(str(current_frequency))
+            for j in range(len(dsa_array[i])):
+                csv_file.write(f",{dsa_array[i][j]}")
+            if not (i == len(dsa_array) - 1):
+                csv_file.write('\n')
+        self.external_broadcast("CSV Ouput Written", "success")
+
+
+    def create_time_csv_file(self, start_time_min):
+        start_time_seconds = start_time_min * 60.
+        start_index = int(self.eegData.sampleRate * start_time_seconds)
+        if 0 > start_index or start_index >= len(self.eegData.data[self.processingSettings.channel_number]):
+            self.external_broadcast("Requested start time is outside the length of the input files.", 'error')
+            return
+        end_index = int(self.eegData.sampleRate * (start_time_seconds + self.processingSettings.T_slow))
+        if 0 >= end_index or end_index >= len(self.eegData.data[self.processingSettings.channel_number]):
+            self.external_broadcast("Requested ending time is outside the length of the input files.", 'error')
+            return
+        data_to_write = np.array(self.eegData.data[self.processingSettings.channel_number][start_index:end_index]) * 1e3
+
+        # write the csv file out
+        if not (self.get_ouput_file_ending() == 'csv'):
+            self.external_broadcast("Specified output file is not '.csv'. Error.", "error")
+            return
+        csv_file = open(self.outputFileName, 'w')
+
+        # write the time steps first
+        csv_file.write('Time (s), Amplitude (uV)\n')
+        for i in range(int(self.processingSettings.T_slow / self.processingSettings.T_fast)):
+            csv_file.write(f"{self.processingSettings.T_fast * i},{data_to_write[i]}")
+            if not (i == int(self.processingSettings.T_slow / self.processingSettings.T_fast) - 1):
+                csv_file.write('\n')
+        self.external_broadcast("CSV Ouput Written", "success")
+
+
+    def create_stl_file(self, time_min, height_floor=-10, filter_size=0):
+        if not (self.get_ouput_file_ending() == 'stl'):
+            self.external_broadcast("Output file type is not STL. Error.", "error")
+            return
+
+        time_seconds = time_min * 60
+        # fetch the EEG data
+        dsa_array = self.eegData.get_dsa_frame(
+                self.processingSettings.T_fast, 
+                self.processingSettings.T_slow,
+                self.graphicsSettings.frequencyDomainParameters.max_plot_frequency,
+                time_seconds,
+                channel_number=self.processingSettings.channel_number)
+        data = np.flip(dsa_array, 0)
+
+        # apply a smoothing filter
+        if filter_size > 0:
+            data = ndimage.median_filter(data, size=(filter_size, 5*filter_size))
+        rows, cols = data.shape
+
+        # adjust the height of the data
+        data = data - (self.graphicsSettings.frequencyDomainParameters.min_db_power + height_floor)
+        for i in range(len(data)):
+            for j in range(len(data[i])):
+                if data[i][j] < 0:
+                    data[i][j] = 0.
+
+        # create the mesh grid
+        t = np.linspace(0,
+            self.processingSettings.T_slow,
+            int(self.processingSettings.T_slow / self.processingSettings.T_fast) ) / 60.
+        f = np.linspace(0,
+            self.graphicsSettings.frequencyDomainParameters.max_plot_frequency,
+            int(self.graphicsSettings.frequencyDomainParameters.max_plot_frequency * self.processingSettings.T_fast) )
+        T, F = np.meshgrid(t, f)
+
+         # Create vertices
+        vertices = np.zeros((len(t) * len(f), 3))
+        vertices[:, 0] = T.ravel()
+        vertices[:, 1] = F.ravel()
+        vertices[:, 2] = data.ravel()
+
+        # Create faces (triangular mesh)
+        faces = []
+        for i in range(rows - 1):
+            for j in range(cols - 1):
+                # Define corners of the rectangle
+                p1 = i * cols + j
+                p2 = p1 + 1
+                p3 = p1 + cols
+                p4 = p3 + 1
+                # Create two triangles
+                faces.append([p1, p2, p3])
+                faces.append([p2, p4, p3])
+        faces = np.array(faces)
+
+        # Create the mesh
+        terrain_mesh = mesh.Mesh(np.zeros(faces.shape[0], dtype=mesh.Mesh.dtype))
+        for i, f in enumerate(faces):
+            for j in range(3):
+                terrain_mesh.vectors[i][j] = vertices[f[j], :]
+
+        # Save to STL
+        terrain_mesh.save(self.outputFileName)
+        self.external_broadcast("STL Ouput Written", "success")

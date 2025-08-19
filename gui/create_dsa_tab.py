@@ -18,13 +18,12 @@ def create_dsa_tab(renderer, progress_object, dsa_tab, start_time_var):
     def submit_dsa():
         # create the DSA display and fetch values
         if not renderer.eegData:
-            raise 'No Input Data Selected'  # TODO :: have this publish to the GUI
+            rrenderer.external_broadcast('No Input Data Selected', 'error')
         renderer.do_save_animation = True
         renderer.graphicsSettings.frequencyDomainParameters.min_db_power = int(min_db_variable.get())
         renderer.graphicsSettings.frequencyDomainParameters.max_db_power = int(max_db_variable.get())
         renderer.graphicsSettings.renderSettings.font_size = axis_font_var.get()
         renderer.graphicsSettings.renderSettings.tick_size = tick_font_var.get()
-        # TODO :: Fetch a particular slow_time starting/ending value
 
         # graphs graphical resolutoin settings
         if do_sef_var.get():
