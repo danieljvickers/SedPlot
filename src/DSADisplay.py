@@ -467,8 +467,8 @@ class DSADisplay:
         self.external_broadcast("Image Generated", 'success')
 
 
-    def create_csv_file(self, time_min):
-        start_time_seconds = time * 60.
+    def create_csv_file(self, start_time_min):
+        start_time_seconds = start_time_min * 60.
         try:
             dsa_array = self.eegData.get_dsa_frame(
                 self.processingSettings.T_fast, 
@@ -481,23 +481,25 @@ class DSADisplay:
             return
 
         # write the csv file out
-        if not (self.get_ouput_file_ending == 'csv'):
+        if not (self.get_ouput_file_ending() == 'csv'):
             self.external_broadcast("Specified output file is not '.csv'. Error.", "error")
             return
         csv_file = open(self.outputFileName, 'w')
 
         # write the time steps first
+        csv_file.write('Frequency (Hz) \\ Time (min)')
         for i in range(int(self.processingSettings.T_slow / self.processingSettings.T_fast)):
-            current_time_min = self.processingSettings.T_slow * i / 60.
+            current_time_min = self.processingSettings.T_fast * i / 60.
             csv_file.write(f",{current_time_min}")
         csv_file.write('\n')
 
+        # write the frequency on the left followed by the DSA numbers
         for i in range(len(dsa_array)):
             freq_index = len(dsa_array) - i
             current_frequency = float(freq_index) / self.processingSettings.T_fast
             csv_file.write(str(current_frequency))
-            for j in range(len(dsa_array[-i])):
-                csv_file.write(f",{dsa_array[-i][j]}")
+            for j in range(len(dsa_array[i])):
+                csv_file.write(f",{dsa_array[i][j]}")
             if not (i == len(dsa_array) - 1):
                 csv_file.write('\n')
         self.external_broadcast("CSV Ouput Written", "success")

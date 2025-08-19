@@ -144,6 +144,8 @@ def get_output_file():
             ("JPG files", "*.jpg"),
             ("PDF files", "*.pdf"),
             ("SVG files", "*.svg"),
+            ("CSV files", "*.csv"),
+            ("STL files", "*.stl"),
             ("All files", "*.*")
         ]
     )
@@ -244,9 +246,11 @@ start_time_entry.grid(row=4, column=1)
 tabControl = ttk.Notebook(root)
 dsa_tab = ttk.Frame(tabControl)
 spectrogram_tab = ttk.Frame(tabControl)
+csv_tab = ttk.Frame(tabControl)
 advanced_tab = ttk.Frame(tabControl)
 tabControl.add(dsa_tab, text ='DSA')
 tabControl.add(spectrogram_tab, text ='Spectrogram')
+tabControl.add(csv_tab, text='CSV')
 tabControl.add(advanced_tab, text ='Advanced')
 tabControl.grid(row=5, column=0, columnspan=3, sticky="ew")
 
@@ -278,5 +282,7 @@ from gui.create_dsa_tab import create_dsa_tab
 create_dsa_tab(renderer, progress_object, dsa_tab, start_time_var)
 from gui.create_spectrogram_tab import create_spectrogram_tab
 create_spectrogram_tab(renderer, progress_object, spectrogram_tab, start_time_var)
+from gui.create_csv_tab import create_csv_tab
+create_csv_tab(renderer, csv_tab, start_time_var)
 
 root.mainloop()
