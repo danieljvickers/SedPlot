@@ -88,7 +88,7 @@ class DSADisplay:
 
             # handle the time-domain plotting case
             if self.graphicsSettings.timeDomainParameters.do_time_domain_plot:
-                fast_time_line.set_data(t, np.real(y))
+                fast_time_line.set_data(t, np.real(y) * 1e3)
 
             # handels the case of plotting the SEF graph
             y_f_linear = abs(np.fft.fftshift(np.fft.fft(y)))
@@ -507,15 +507,15 @@ class DSADisplay:
 
     def create_time_csv_file(self, start_time_min):
         start_time_seconds = start_time_min * 60.
-        start_index = self.eegData.sampleRate * start_time_seconds
-        if 0 >= start_index or start_index >= len(self.eegData.data[self.processingSettings.channel_number]):
+        start_index = int(self.eegData.sampleRate * start_time_seconds)
+        if 0 > start_index or start_index >= len(self.eegData.data[self.processingSettings.channel_number]):
             self.external_broadcast("Requested start time is outside the length of the input files.", 'error')
             return
-        end_index = self.eegDa.sampleRate * (start_time_seconds + self.processingSettings.T_slow)
-        if 0 >= start_end_indexindex or end_index >= len(self.eegData.data[self.processingSettings.channel_number]):
-            self.external_broadcast("Requested timending time is outside the length of the input files.", 'error')
+        end_index = int(self.eegData.sampleRate * (start_time_seconds + self.processingSettings.T_slow))
+        if 0 >= end_index or end_index >= len(self.eegData.data[self.processingSettings.channel_number]):
+            self.external_broadcast("Requested ending time is outside the length of the input files.", 'error')
             return
-        data_to_write = self.eegData.data[self.processingSettings.channel_number][start_index:end_index]
+        data_to_write = np.array(self.eegData.data[self.processingSettings.channel_number][start_index:end_index]) * 1e3
 
         # write the csv file out
         if not (self.get_ouput_file_ending() == 'csv'):
@@ -529,6 +529,7 @@ class DSADisplay:
             csv_file.write(f"{self.processingSettings.T_fast * i},{data_to_write[i]}")
             if not (i == int(self.processingSettings.T_slow / self.processingSettings.T_fast) - 1):
                 csv_file.write('\n')
+        self.external_broadcast("CSV Ouput Written", "success")
 
 
     def create_stl_file(self, time_min, height_floor=-10, filter_size=0):
