@@ -531,7 +531,7 @@ class DSADisplay:
                 csv_file.write('\n')
 
 
-    def create_stl_file(self, time_min, height_floor=-10, filter_size=1):
+    def create_stl_file(self, time_min, height_floor=-10, filter_size=0):
         if not (self.get_ouput_file_ending == 'stl'):
             self.external_broadcast("Output file type is not STL. Error.", "error")
 
@@ -546,7 +546,7 @@ class DSADisplay:
         data = np.flip(dsa_array, 0)
 
         # apply a smoothing filter
-        if filter_size > 1:
+        if filter_size > 0:
             data = ndimage.median_filter(data, size=(filter_size, 5*filter_size))
             rows, cols = data.shape
 
