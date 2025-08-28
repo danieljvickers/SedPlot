@@ -7,6 +7,7 @@ import moviepy as mp
 # math and scientific libraries
 import numpy as np
 from scipy.io import wavfile
+from scipy import ndimage
 import math
 from stl import mesh
 
@@ -315,7 +316,7 @@ class DSADisplay:
         self.external_broadcast("Image Generated", "success")
 
 
-    def create_spectrogram_animation(self, time_min, script, height_floor=-10, tk_progress_bar=None, filter_size=0):
+    def create_spectrogram_animation(self, time_min, script, height_floor=-10, tk_progress_bar=None, filter_size=0, do_triangle_mesh=True):
         # set up the animation variables and function
         # TODO :: Add an ability to control the rotation speed. Angles/second seem like a good unit
         def run_spec_animation(i):
@@ -358,22 +359,24 @@ class DSADisplay:
             int(self.graphicsSettings.frequencyDomainParameters.max_plot_frequency * self.processingSettings.T_fast) )
         T, F = np.meshgrid(t, f)
 
-         # Create vertices
-        vertices = np.zeros((len(t) * len(f), 3))
-        vertices[:, 0] = T.ravel()
-        vertices[:, 1] = F.ravel()
-        vertices[:, 2] = data.ravel()
-
         # create the image
         ax = plt.figure(figsize=self.graphicsSettings.renderSettings.figure_size,
             dpi=self.graphicsSettings.renderSettings.dpi).add_subplot(projection='3d')
         self.external_broadcast("Plotting Triangle Mesh", "info")
-        ax.plot_trisurf(T.ravel(), F.ravel(), data.ravel(), 
-                        cmap='jet',
-                        vmin=0,
-                        vmax=self.graphicsSettings.frequencyDomainParameters.max_db_power - 
-                            self.graphicsSettings.frequencyDomainParameters.min_db_power - height_floor,
-                        lw=0)
+        if do_triangle_mesh:
+            ax.plot_trisurf(T.ravel(), F.ravel(), data.ravel(), 
+                            cmap='jet',
+                            vmin=-height_floor,
+                            vmax=self.graphicsSettings.frequencyDomainParameters.max_db_power - 
+                                self.graphicsSettings.frequencyDomainParameters.min_db_power - height_floor,
+                            lw=0)
+        else:
+            ax.plot_surface(T, F, data, 
+                            cmap='jet',
+                            vmin=-height_floor,
+                            vmax=self.graphicsSettings.frequencyDomainParameters.max_db_power - 
+                                self.graphicsSettings.frequencyDomainParameters.min_db_power - height_floor,
+                            lw=0)
         plt.xlabel('time (min)', fontsize=self.graphicsSettings.renderSettings.font_size)
         plt.ylabel('frequency (Hz)', fontsize=self.graphicsSettings.renderSettings.font_size)
         ax.set_zlabel('power (dB)', fontsize=self.graphicsSettings.renderSettings.font_size)
@@ -409,7 +412,7 @@ class DSADisplay:
         return
 
     
-    def create_spectrogram_image(self, time_min, angle=(30, 45), height_floor=-10, filter_size=0):
+    def create_spectrogram_image(self, time_min, angle=(30, 45), height_floor=-10, filter_size=0, do_triangle_mesh=True):
         time_seconds = time_min * 60
         # fetch the EEG data
         dsa_array = self.eegData.get_dsa_frame(
@@ -441,22 +444,25 @@ class DSADisplay:
             int(self.graphicsSettings.frequencyDomainParameters.max_plot_frequency * self.processingSettings.T_fast) )
         T, F = np.meshgrid(t, f)
 
-         # Create vertices
-        vertices = np.zeros((len(t) * len(f), 3))
-        vertices[:, 0] = T.ravel()
-        vertices[:, 1] = F.ravel()
-        vertices[:, 2] = data.ravel()
-
         # create the image
         ax = plt.figure(figsize=self.graphicsSettings.renderSettings.figure_size,
             dpi=self.graphicsSettings.renderSettings.dpi).add_subplot(projection='3d')
         self.external_broadcast("Plotting Triangle Mesh", "info")
-        ax.plot_trisurf(T.ravel(), F.ravel(), data.ravel(), 
-                        cmap='jet',
-                        vmin=-height_floor,
-                        vmax=self.graphicsSettings.frequencyDomainParameters.max_db_power - 
-                            self.graphicsSettings.frequencyDomainParameters.min_db_power - height_floor,
-                        lw=0)
+        if do_triangle_mesh:
+            ax.plot_trisurf(T.ravel(), F.ravel(), data.ravel(), 
+                            cmap='jet',
+                            vmin=-height_floor,
+                            vmax=self.graphicsSettings.frequencyDomainParameters.max_db_power - 
+                                self.graphicsSettings.frequencyDomainParameters.min_db_power - height_floor,
+                            lw=0)
+        else:
+            ax.plot_surface(T, F, data, 
+                            cmap='jet',
+                            rstride=1, cstride=1,
+                            vmin=-height_floor,
+                            vmax=self.graphicsSettings.frequencyDomainParameters.max_db_power - 
+                                self.graphicsSettings.frequencyDomainParameters.min_db_power - height_floor,
+                            lw=0)
         plt.xlabel('time (min)', fontsize=self.graphicsSettings.renderSettings.font_size)
         plt.ylabel('frequency (Hz)', fontsize=self.graphicsSettings.renderSettings.font_size)
         ax.set_zlabel('power (dB)', fontsize=self.graphicsSettings.renderSettings.font_size)
