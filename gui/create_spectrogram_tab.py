@@ -26,10 +26,11 @@ def create_spectrogram_tab(renderer, progress_object, root, start_time_var):
             script = get_spectrogram_animation_script(start_angle, end_angle, reset=(not dont_angle_reset_var.get()))
             renderer.create_spectrogram_animation(start_time_var.get(), script,
                 tk_progress_bar=progress_object, height_floor=-height_var.get(),
-                filter_size=smoothing_var.get())
+                filter_size=smoothing_var.get(), do_triangle_mesh=do_triangle_mesh_var.get())
         elif file_ending in ('png', 'jpg', 'pdf', 'svg'):
             renderer.create_spectrogram_image(start_time_var.get(), start_angle,
-                height_floor=-height_var.get(), filter_size=smoothing_var.get())
+                height_floor=-height_var.get(), filter_size=smoothing_var.get(),
+                do_triangle_mesh=do_triangle_mesh_var.get())
         elif file_ending in ('stl'):
             renderer.create_stl_file(start_time_var.get(), height_floor=-height_var.get(),
                 filter_size=smoothing_var.get())
@@ -112,6 +113,11 @@ def create_spectrogram_tab(renderer, progress_object, root, start_time_var):
     dont_angle_reset_checkbox = tk.Checkbutton(root, text="No Angle Reset", variable=dont_angle_reset_var, onvalue=True, offvalue=False)
     dont_angle_reset_checkbox.grid(row=row_counter, column=1)
     # do_angle_reset_checkbox.select()
+
+    # Variable that dtermines if we loop the animation or not
+    do_triangle_mesh_var = tk.BooleanVar(root)
+    do_triangle_mesh_checkbox = tk.Checkbutton(root, text="Use Triangle Mesh", variable=do_triangle_mesh_var, onvalue=True, offvalue=False)
+    do_triangle_mesh_checkbox.grid(row=row_counter, column=2)
     row_counter += 1
 
     spectrogram_button = tk.Button(root, text="Generate 3D Spectrogram", command=submit_spectrogram)
