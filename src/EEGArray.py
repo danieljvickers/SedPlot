@@ -71,6 +71,11 @@ class EEGArray:
         for i in range(start_frame, start_frame+num_image_frames):
             y = np.array(processing_data[num_samples * i:num_samples * (i + 1)])
             y_f_linear = abs(np.fft.fftshift(np.fft.fft(y)))
+
+            # convert the frequency-domain data to dB and replace 0s with small numbers that will not conver to NaNs
+            for i in range(len(y_f_linear)):
+                if y_f_linear[i] == 0.:
+                    y_f_linear[i] = 1e-100            
             y_f = 20 * np.log10(y_f_linear)
 
             empty_sed_array = np.roll(empty_sed_array, -1, axis=0)
