@@ -136,52 +136,7 @@ TODO :: Put in a bunch of graphics and a discription of what all of the buttons 
 
 ### Using from Python
 
-The source code in this repository is broken up into two diffent directories. There are tools that are beneficial for the compiled binary application, which includes the `EEGView.py` file and all files in the `gui` directory. None of the that code is intended to be helpful when working with this repository. All relevant code is in the other directory, `src`. Inside of `src`, there are two primary files of interest. Here we will describe the contents of each and how to manipulate the code
-
-#### EEGArray.py
-
-The `EEGArray.py` file is generally the most-useful file for anyone trying to directly manipulate EEG/DSA data without desiring any of the graphical rendering output. The `EEGArray.py` file contains code for a single `EEGArray` object, with some useful methods for returning processed EEG data. The object must be instantiated with either a string to a valid EDF file or an array of strings for multiple files. If many files are provided, they are concatenated together into a single python. The code can be called and stored to a variable like so: `data = EEGArray('/path/to/edf/file')`. Upon completion, public member variable are created. The list of member variables is below:
-
-| Member Variable Name | Meaning |
-| -                    | - | 
-| totalNumSamples      | The number of discrete data values in the array of processed EEG data |
-| sampleRate           | The sampling rate in samples per second |
-| totalTime            | The total amount of time that the file lasts for, which is equal to `totalNumSamples / sampleRate` |
-| inputFiles           | The string or array of strings that was used to generate this particular EEGArray object |
-| data                 | A list of numpy arrays that contain the EEG time-series data. Each index in the list is the data for a different EEG channel (usually `len(data) = 4` for commercial EEG montitors) |
-
-
-
-To extract data
-
-The useage of each function is described here:
-
-|
-
-1. `DSADisplay.py`: This file holds the code for the python object that renders graphics
-
-```python
-from SignalDisplay import SignalDisplay
-
-sig_display = SignalDisplay()
-sig_display.load_data_from_file('/path/to/input/file')
-sig_display.create_plot_from_data()
-```
-
-The default setting is to show the animation in real-time and not save off the file. To generate a file with the audio attached, you will want to set an ouput file of `.mp4` type and tell the signal display object to attach the audio.
-
-```python
-from SignalDisplay import SignalDisplay
-
-sig_display = SignalDisplay()
-sig_display.load_data_from_file('/path/to/input/file')
-sig_display.output_file_name = '/path/to/output/file'
-sig_display.do_save_animation = True
-sig_display.do_add_audio_to_animation = True
-sig_display.create_plot_from_data()
-```
-
-Note that in order to attach the audio, the signal display object needs to create an intermediate file named `temp.mp4`. It will create this file in the execution directory, and will remove it after generation. If you have a file named `temp.mp4` in your directory, it will be overwritten and then deleted during execution of the plot generation when the `do_add_audio_to_animation` flag is set to `True`.
+To view the python usage documentation, checkout the [python usage readme file](docs/python_usage.md).
 
 ## Citing Works
 
