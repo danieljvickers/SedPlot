@@ -52,7 +52,7 @@ The `DSADisplay.py` file contains all of the code for converting EEG data into a
 
 Two private variables hold internal references to graphical settings in objects, defined in `src/GraphicsSettings.py`. You can refer to that file for a detailed breakdown of the structure of these objects. They are also repeated here.
 
-`ProcessingSettings`
+`GraphicsSettings`
 
 | Variable Name                                                    | Default  | Meaning |
 | -                                                                | -        | - |
@@ -70,6 +70,16 @@ Two private variables hold internal references to graphical settings in objects,
 | renderSettings.dpi                                               | 100      | Sets the pixels per inch of the figure | 
 | renderSettings.do_render_plot_axis                               | True     | Determines if the ticks will be shown on the figure | 
 | renderSettings.fps                                               | 30       | Frames per second of all video outputs | 
+
+`ProcessingSettings`
+
+| Variable Name  | Default | Meaning |
+| -              | -       | - |
+| T_slow         | 1200    | Slow time of the STFT used to generate the DSA, in seconds |
+| T_fast         | 2.5     | Fast time of the STFT used to generate the DSA, in seconds |
+| channel_number | 0       | Index of the channel number used when opening the `EEGArray.data` object. See above. |
+
+The `DSADisplay` object also has several class methods, with their usage documented below:
 
 
 ## Examples
