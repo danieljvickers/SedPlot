@@ -252,27 +252,26 @@ class DSADisplay:
             if file_ending == 'mp4' and self.do_add_audio_to_animation:
                 if not tk_progress_bar:  # uses tqdm if there is no external progress bar in the GUI
                     with tqdm(total=total_frames, desc='Saving video') as progress_bar:
-                        ani.save('temp.mp4', writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=lambda i, n: progress_bar.update(1))
+                        ani.save('temp_sedplot_video.mp4', writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=lambda i, n: progress_bar.update(1))
                 else:
                     tk_progress_bar.set_bar_max(total_frames)
-                    ani.save(self.outputFileName, writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=tk_progress_bar.update_bar)
+                    ani.save('temp_sedplot_video.mp4', writer=writer, dpi=self.graphicsSettings.renderSettings.dpi, progress_callback=tk_progress_bar.update_bar)
 
                 self.external_broadcast(f"Generating Sonicated Audio")
                 audio_rate = int(self.eegData.sampleRate * self.processingSettings.T_fast * self.graphicsSettings.renderSettings.fps)
-                scaled_data = np.int16(self.eegData.data / np.max(np.abs(self.eegData.data)) * int(2 ** 15))
-                wavfile.write('temp.wav', audio_rate, scaled_data)
+                scaled_data = np.int16(self.eegData.data[self.processingSettings.channel_number] / np.max(np.abs(self.eegData.data[self.processingSettings.channel_number])) * int(2 ** 15))
+                wavfile.write('temp_sedplot_auio.wav', audio_rate, scaled_data)
 
-                audio = mp.AudioFileClip('temp.wav')
-                video1 = mp.VideoFileClip('temp.mp4')
+                audio = mp.AudioFileClip('temp_sedplot_auio.wav')
+                video1 = mp.VideoFileClip('temp_sedplot_video.mp4')
                 final_duration = min(audio.duration, video1.duration)
                 video2 = video1.with_duration(final_duration)
-                video2.write_videofile(self.outputFileName)
-                final_video = video2.with_audio(audio.with_duration(final_duration))
                 self.external_broadcast("Attaching Audio to Video")
+                final_video = video2.with_audio(audio.with_duration(final_duration))
                 final_video.write_videofile(self.outputFileName)
                 self.external_broadcast("Cleaning Up")
-                os.remove('temp.mp4')
-                os.remove('temp.wav')
+                os.remove('temp_sedplot_video.mp4')
+                os.remove('temp_sedplot_auio.wav')
             else:
                 if not tk_progress_bar:  # uses tqdm if there is no external progress bar in the GUI
                     with tqdm(total=total_frames, desc='Saving video') as progress_bar:
