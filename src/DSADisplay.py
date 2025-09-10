@@ -259,7 +259,9 @@ class DSADisplay:
 
                 self.external_broadcast(f"Generating Sonicated Audio")
                 audio_rate = int(self.eegData.sampleRate * self.processingSettings.T_fast * self.graphicsSettings.renderSettings.fps)
-                scaled_data = np.int16(self.eegData.data[self.processingSettings.channel_number] / np.max(np.abs(self.eegData.data[self.processingSettings.channel_number])) * int(2 ** 15))
+                start_sample = math.floor(start_time_min * 60 * self.eegData.sampleRate / num_samples) * num_samples
+                scaled_data = self.eegData.data[self.processingSettings.channel_number][start_sample:]
+                scaled_data = np.int16(scaled_data / np.max(scaled_data) * int(2 ** 15))
                 wavfile.write('temp_sedplot_auio.wav', audio_rate, scaled_data)
 
                 audio = mp.AudioFileClip('temp_sedplot_auio.wav')
@@ -269,7 +271,6 @@ class DSADisplay:
                 self.external_broadcast("Attaching Audio to Video")
                 final_video = video2.with_audio(audio.with_duration(final_duration))
                 final_video.write_videofile(self.outputFileName)
-                self.external_broadcast("Cleaning Up")
                 os.remove('temp_sedplot_video.mp4')
                 os.remove('temp_sedplot_auio.wav')
             else:
