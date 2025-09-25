@@ -81,6 +81,63 @@ Two private variables hold internal references to graphical settings in objects,
 
 The `DSADisplay` object also has several class methods, with their usage documented below:
 
+`load_eeg_data(inputFileName)` returns nothing, but loads eeg data to the object
+
+- `inputFileName` is a string of a single file **OR** a list of strings that contain multiple EDF files. This will load the data as an `EEGArray` (see above) and stored internall as `eegData` (see below)
+
+`calc_SEF_value(f, linear_data, num_frequency_points)` returns a single frequency value that is the SEF
+
+- `f` is an array of frequency values
+- `linear_data` is an array of DFT values, which matches `f`
+- `num_frequency_points` is the number of points that are considered in the plot when calculating SEF
+
+`external_broadcast(msg, log_level='info')` returns none but is an internal print value that can either print to the terminal or to a GUI
+
+- `msg` is the message being sent
+- `log_level` is the info level, and determines the color of the print statement. Acceptable log_level values are `info`, `success`, `warn`, `error`, and `except`.
+
+`get_ouput_file_ending()` returns a string that is the ending of the output file name (see below)
+
+`create_dsa_animation(start_time_min=0,tk_progress_bar=None)` renders the configured animated DSA output for the currently set input data and a type defined by the file ending of the output file. Acceptable output endings are .GIF and .MP4
+
+- `start_time_min` is the start time (in minutes) into the currently configured eegData that the animation will begin
+- `tk_progress_bar` is a reference to a progress bar that will be updated with animation progress. If set to None, it will print progress to the terminal.
+
+`create_dsa_image(start_time_min)` plots a still image DSA of the type specified by the current output file. Acceptable outputs include PNG, JPG, PDF, and SVG.
+
+- `start_time_min` is the time (in minutes) that the image will be rendered at
+
+`create_spectrogram_animation(time_min, script, height_floor=-10, tk_progress_bar=None, filter_size=0, do_triangle_mesh=True)`
+
+- `time_min` is the time in the case file that the spectrogram will plot
+- `script` is an array of dictionary objects that control the various look angles of the render. These dictionaries contain: `function` (which can be either "rotate" or "pause"), `begin` which is an integer representing the starting frame of this script element, `end` which is an integer representing the ending frame of this script element, `start` which is a 2-element array containing angles to begin this script element, and `stop` which is a 2-element array containing angles to end this script element.
+- `angle` is a 2-element array that contains the view elevation and azimuth look angles in degrees.
+- `height_floor` is the height below the currently configured minimum dB value (see `FrequencyDomainParameters`) which will be made flat for the render
+- `tk_progress_bar` is a reference to a progress bar that will be updated with animation progress. If set to None, it will print progress to the terminal.
+- `filter_size` is the size of a smoothing median filter, mostly useful for generating STL files.
+- `do_trignale_mesh` is a boolean that controls if the mesh will be a default surface mesh or a triangle mesh. The triangle mesh usually looks nicer, but takes longer to render. It is recommended to set this to false as you experiment with view angles and data times, then set this to true for the final image render.
+
+`create_spectrogram_image(time_min, angle=(30, 45), height_floor=-10, filter_size=0, do_triangle_mesh=True)`
+
+- `time_min` is the time in the case file that the spectrogram will plot
+- `angle` is a 2-element array that contains the view elevation and azimuth look angles in degrees.
+- `height_floor` is the height below the currently configured minimum dB value (see `FrequencyDomainParameters`) which will be made flat for the render
+- `filter_size` is the size of a smoothing median filter, mostly useful for generating STL files.
+- `do_trignale_mesh` is a boolean that controls if the mesh will be a default surface mesh or a triangle mesh. The triangle mesh usually looks nicer, but takes longer to render. It is recommended to set this to false as you experiment with view angles and data times, then set this to true for the final image render.
+
+`create_dsa_csv_file(start_time_min)` writes an output CSV file containing the calculated DSA power, time, and frequency values written to the currently configured output file.
+
+- `start_time_min` is the time in the eegData at which this DSA represents.
+
+`create_time_csv_file(start_time_min)` writes the raw time-series EEG data directly to CSV with the time from the start of the case.
+
+- `start_time_min` is the time in the eegData at which this data represents.
+
+`create_stl_file(time_min, height_floor=-10, filter_size=0)` generates an STL file that contains the triangle vertices of the 3D spectrogram
+
+- `time_min` is the time in minutes that the STL file represents
+- `height_floor` is the height below the currently configured minimum dB value (see `FrequencyDomainParameters`) which will be made flat for the render
+- `filter_size` is the size of a smoothing median filter, mostly useful for generating STL files.
 
 ## Examples
 
