@@ -139,27 +139,16 @@ The `DSADisplay` object also has several class methods, with their usage documen
 - `height_floor` is the height below the currently configured minimum dB value (see `FrequencyDomainParameters`) which will be made flat for the render
 - `filter_size` is the size of a smoothing median filter, mostly useful for generating STL files.
 
-## Examples
+The DSADisplay object also has a list of internal values used for plotting:
 
-```python
-from SignalDisplay import SignalDisplay
-
-sig_display = SignalDisplay()
-sig_display.load_data_from_file('/path/to/input/file')
-sig_display.create_plot_from_data()
-```
-
-The default setting is to show the animation in real-time and not save off the file. To generate a file with the audio attached, you will want to set an ouput file of `.mp4` type and tell the signal display object to attach the audio.
-
-```python
-from SignalDisplay import SignalDisplay
-
-sig_display = SignalDisplay()
-sig_display.load_data_from_file('/path/to/input/file')
-sig_display.output_file_name = '/path/to/output/file'
-sig_display.do_save_animation = True
-sig_display.do_add_audio_to_animation = True
-sig_display.create_plot_from_data()
-```
-
-Note that in order to attach the audio, the signal display object needs to create an intermediate file named `temp.mp4`. It will create this file in the execution directory, and will remove it after generation. If you have a file named `temp.mp4` in your directory, it will be overwritten and then deleted during execution of the plot generation when the `do_add_audio_to_animation` flag is set to `True`.
+| Variable Name                        | Default              | Meaning |
+| do_save_animation | False | Determines if the animation/plot will be saved (True) or only displayed to the screen (False) |
+| do_add_audio_to_animation | False | Determines if any output DSA video MP4s will be sonicated (True) or not (False) |
+| do_spectrogram_plot | True | Determines if the MP4 videos will plot the DSA (True) or not (False) |
+| do_spectral_edge_frequency | False | Determines if the MP4 videos will plot the SEF on the DSA (True) or not (False) |
+| graphicsSettings | GraphicsSettings() | Initialized as a default GraphicsSettings object (see above) |
+| processingSettings | ProcessingSettings() | Initialized as a default ProcessingSettings object (see above) |
+| sefPercent | 80 | sets the SEF percentage considered when plotting the SEF |
+| eegData | None | determins if the SEF will be rendered on top of the spectrogram |
+| outputFileName | '' | A string that holds the name of the output file |
+| broadcaster | None | A value that will only be used with the GUI for publishing messages up to the user. Setting this to None tells the obejct to print to the terminal instead. |
