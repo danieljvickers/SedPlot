@@ -18,7 +18,7 @@ class RenderSettings:
     tick_size = 14
     dpi = 100
     do_render_plot_axis = True
-    fps = 40
+    fps = 30
 
 class ProcessingSettings:
     T_slow = 20*60
