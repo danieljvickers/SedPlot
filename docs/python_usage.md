@@ -141,14 +141,15 @@ The `DSADisplay` object also has several class methods, with their usage documen
 
 The DSADisplay object also has a list of member variables used for plotting:
 
-| Variable Name                        | Default              | Meaning |
-| do_save_animation | False | Determines if the animation/plot will be saved (True) or only displayed to the screen (False) |
-| do_add_audio_to_animation | False | Determines if any output DSA video MP4s will be sonicated (True) or not (False) |
-| do_spectrogram_plot | True | Determines if the MP4 videos will plot the DSA (True) or not (False) |
-| do_spectral_edge_frequency | False | Determines if the MP4 videos will plot the SEF on the DSA (True) or not (False) |
-| graphicsSettings | GraphicsSettings() | Initialized as a default GraphicsSettings object (see above) |
-| processingSettings | ProcessingSettings() | Initialized as a default ProcessingSettings object (see above) |
-| sefPercent | 80 | sets the SEF percentage considered when plotting the SEF |
-| eegData | None | determins if the SEF will be rendered on top of the spectrogram |
-| outputFileName | '' | A string that holds the name of the output file |
-| broadcaster | None | A value that will only be used with the GUI for publishing messages up to the user. Setting this to None tells the obejct to print to the terminal instead. |
+| Variable Name              | Default              | Meaning |
+| -                          | -                    | -       |
+| do_save_animation          | False                | Determines if the animation/plot will be saved (True) or only displayed to the screen (False) |
+| do_add_audio_to_animation  | False                | Determines if any output DSA video MP4s will be sonicated (True) or not (False) |
+| do_spectrogram_plot        | True                 | Determines if the MP4 videos will plot the DSA (True) or not (False) |
+| do_spectral_edge_frequency | False                | Determines if the MP4 videos will plot the SEF on the DSA (True) or not (False) |
+| graphicsSettings           | GraphicsSettings()   | Initialized as a default GraphicsSettings object (see above) |
+| processingSettings         | ProcessingSettings() | Initialized as a default ProcessingSettings object (see above) |
+| sefPercent                 | 80                   | sets the SEF percentage considered when plotting the SEF |
+| eegData                    | None                 | determins if the SEF will be rendered on top of the spectrogram |
+| outputFileName             | ''                   | A string that holds the name of the output file |
+| broadcaster                | None                 | A value that will only be used with the GUI for publishing messages up to the user. Setting this to None tells the obejct to print to the terminal instead. |
