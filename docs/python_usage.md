@@ -139,7 +139,7 @@ The `DSADisplay` object also has several class methods, with their usage documen
 - `height_floor` is the height below the currently configured minimum dB value (see `FrequencyDomainParameters`) which will be made flat for the render
 - `filter_size` is the size of a smoothing median filter, mostly useful for generating STL files.
 
-The DSADisplay object also has a list of internal values used for plotting:
+The DSADisplay object also has a list of member variables used for plotting:
 
 | Variable Name                        | Default              | Meaning |
 | do_save_animation | False | Determines if the animation/plot will be saved (True) or only displayed to the screen (False) |
