@@ -52,7 +52,7 @@ def find_ffmpeg():
     if not os.path.isfile(ffmpeg_location):  # if ffmpeg is not local, fall back to the global ffmpeg installation
         ffmpeg_location = shutil.which("ffmpeg")  # sets the lcoation to the global installation
         if not ffmpeg_location:
-            print("ERROR :: FFMPEG not found locally and is not installed. Video (MP4) file generation will be disables. Install FFMPEG to resolve.")  # if it wasn't found, rase an exception
+            print("ERROR :: FFMPEG not found locally and is not installed. Video (MP4) file generation will be disabled. Install FFMPEG to resolve.")  # if it wasn't found, rase an exception
         else:
             print(f"INFO :: Found FFMPEG globally. Using FFMPEG at {ffmpeg_location}")
     
@@ -60,10 +60,12 @@ def find_ffmpeg():
 
 # set the environment and path veriables to where FFMPEG was found
 ffmpeg_location = find_ffmpeg()
-os.environ["FFMPEG_BINARY"] = ffmpeg_location
-os.environ["IMAGEIO_FFMPEG_EXE"] = ffmpeg_location
-animation.FFMpegWriter.exec_path = ffmpeg_location
-plt.rcParams['animation.ffmpeg_path'] = ffmpeg_location
+ffmpeg_location = None
+if ffmpeg_location is not None:
+    os.environ["FFMPEG_BINARY"] = ffmpeg_location
+    os.environ["IMAGEIO_FFMPEG_EXE"] = ffmpeg_location
+    animation.FFMpegWriter.exec_path = ffmpeg_location
+    plt.rcParams['animation.ffmpeg_path'] = ffmpeg_location
 
 
 # library imports after ffmpeg is found
@@ -194,9 +196,9 @@ file_entry.grid(row=0, column=1)
 file_button.grid(row=0, column=2)
 # output
 supported_output_filetypes = [
-    ("GIF files", "*.gif"),
     ("PNG files", "*.png"),
     ("JPG files", "*.jpg"),
+    ("GIF files", "*.gif"),
     ("PDF files", "*.pdf"),
     ("SVG files", "*.svg"),
     ("CSV files", "*.csv"),
