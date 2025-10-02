@@ -19,7 +19,9 @@ def find_ffmpeg():
     if hasattr(sys, '_MEIPASS'):  # This is true if you installed as a binary
         # do a platform specific search for the ffmpeg executable
         if platform.system() == "Windows":
-            ffmpeg_location = os.path.join(sys._MEIPASS, 'ffmpeg', 'ffmpeg-7.1.1-essentials_build', 'bin', 'ffmpeg.exe')
+            for root, dirs, files in os.walk(os.path.join(sys._MEIPASS, 'ffmpeg')):  # searches the ffmpeg temp folder
+                if "ffmpeg.exe" in files:
+                    ffmpeg_location = os.path.join(root, "ffmpeg.exe")
         elif platform.system() == "Darwin": # MacOS
             ffmpeg_location = os.path.join(sys._MEIPASS, 'ffmpeg', 'ffmpeg')
         else:
@@ -32,7 +34,9 @@ def find_ffmpeg():
 
     if (not ffmpeg_location) and os.path.isdir('ffmpeg'):  # if this is not a binary, and there is a local ffmpeg directory
         if platform.system() == "Windows":
-            ffmpeg_location = os.path.join('ffmpeg', 'ffmpeg-7.1.1-essentials_build', 'bin', 'ffmpeg.exe')
+            for root, dirs, files in os.walk('ffmpeg'):  # searches the ffmpeg temp folder
+                if "ffmpeg.exe" in files:
+                    ffmpeg_location = os.path.join(root, "ffmpeg.exe")
         elif platform.system() == "Darwin": # MacOS
             ffmpeg_location = os.path.join('ffmpeg', 'ffmpeg')
         else:
@@ -45,19 +49,23 @@ def find_ffmpeg():
             print(f"WARN :: Searched for FFMPEG at {ffmpeg_location} but found nothing. Searching globally...")
             ffmpeg_location = None  # reset the location
 
-    if not ffmpeg_location:  # if ffmpeg is not local, fall back to the global ffmpeg installation
-        assert shutil.which("ffmpeg") is not None, "ERROR :: FFMPEG not found locally and is not installed. Install FFMPEG to resolve."  # if it wasn't found, rase an exception
+    if not os.path.isfile(ffmpeg_location):  # if ffmpeg is not local, fall back to the global ffmpeg installation
         ffmpeg_location = shutil.which("ffmpeg")  # sets the lcoation to the global installation
-        print(f"INFO :: Found FFMPEG globally. Using FFMPEG at {ffmpeg_location}")
+        if not ffmpeg_location:
+            print("ERROR :: FFMPEG not found locally and is not installed. Video (MP4) file generation will be disabled. Install FFMPEG to resolve.")  # if it wasn't found, rase an exception
+        else:
+            print(f"INFO :: Found FFMPEG globally. Using FFMPEG at {ffmpeg_location}")
     
     return ffmpeg_location
 
 # set the environment and path veriables to where FFMPEG was found
 ffmpeg_location = find_ffmpeg()
-os.environ["FFMPEG_BINARY"] = ffmpeg_location
-os.environ["IMAGEIO_FFMPEG_EXE"] = ffmpeg_location
-animation.FFMpegWriter.exec_path = ffmpeg_location
-plt.rcParams['animation.ffmpeg_path'] = ffmpeg_location
+ffmpeg_location = None
+if ffmpeg_location is not None:
+    os.environ["FFMPEG_BINARY"] = ffmpeg_location
+    os.environ["IMAGEIO_FFMPEG_EXE"] = ffmpeg_location
+    animation.FFMpegWriter.exec_path = ffmpeg_location
+    plt.rcParams['animation.ffmpeg_path'] = ffmpeg_location
 
 
 # library imports after ffmpeg is found
@@ -136,18 +144,8 @@ def get_input_file():
 
 def get_output_file():
     file_path = asksaveasfilename(
-        defaultextension=".mp4",  # Default extension if none is provided by the user
-        filetypes=[
-            ("Video files", "*.mp4"),
-            ("GIF files", "*.gif"),
-            ("PNG files", "*.png"),
-            ("JPG files", "*.jpg"),
-            ("PDF files", "*.pdf"),
-            ("SVG files", "*.svg"),
-            ("CSV files", "*.csv"),
-            ("STL files", "*.stl"),
-            ("All files", "*.*")
-        ]
+        defaultextension=default_output_filetype,  # Default extension if none is provided by the user
+        filetypes=supported_output_filetypes
     )
     if file_path:  # Check if a file path was selected (not canceled)
         out_entry.config(state='normal')
@@ -185,7 +183,7 @@ def set_channel_num(tk_variable=None, _=None, action=None):
 row_counter = 1
 root = tk.Tk()
 root.protocol("WM_DELETE_WINDOW", quit_me)  # cleanup protocol for when the window is closed
-root.title("EEGView")
+root.title("SedPlot v0.4.1")
 
 # common DSA file input and output
 # Input
@@ -197,6 +195,21 @@ file_label.grid(row=0, column=0)
 file_entry.grid(row=0, column=1)
 file_button.grid(row=0, column=2)
 # output
+supported_output_filetypes = [
+    ("PNG files", "*.png"),
+    ("JPG files", "*.jpg"),
+    ("GIF files", "*.gif"),
+    ("PDF files", "*.pdf"),
+    ("SVG files", "*.svg"),
+    ("CSV files", "*.csv"),
+    ("STL files", "*.stl"),
+    ("All files", "*.*")
+]  # sets the list of supported files
+default_output_filetype = ".png" # sets the default file to PNG images
+if ffmpeg_location is not None:
+    # if FFMPEG was found, add MP4 video as a supported file type and set it to default
+    supported_output_filetypes = [("Video files", "*.mp4")] + supported_output_filetypes
+    default_output_filetype = ".mp4"
 out_file = tk.StringVar(value='')
 out_label = tk.Label(root, text='Output File', font=('calibre', 10, 'bold'))
 out_button = tk.Button(root, text="Select Output", font=10, command=get_output_file)
