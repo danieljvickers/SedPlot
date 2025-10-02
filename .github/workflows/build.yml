@@ -51,11 +51,7 @@ jobs:
       - name: Build with PyInstaller
         shell: bash
         run: |
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            pyinstaller EEGView.py --noconfirm --onefile --add-data "ffmpeg;ffmpeg"
-          else
-            pyinstaller EEGView.py --noconfirm --onefile --add-data "ffmpeg:ffmpeg"
-          fi
+          pyinstaller SedPlot.py --noconfirm --onefile --add-data "ffmpeg:ffmpeg"
 
 
       - name: Upload artifact
