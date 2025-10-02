@@ -183,7 +183,7 @@ def set_channel_num(tk_variable=None, _=None, action=None):
 row_counter = 1
 root = tk.Tk()
 root.protocol("WM_DELETE_WINDOW", quit_me)  # cleanup protocol for when the window is closed
-root.title("EEGView")
+root.title("SedPlot v0.4.1")
 
 # common DSA file input and output
 # Input

@@ -5,7 +5,7 @@ Repository for the visualization of data by the use of spectrograms. This code w
 ## Contents
 1. [Features](#features)
 1. [Citing this Software](#citing-this-software)
-1. [Downloading EEGView](#downloading-eegview)
+1. [Downloading SefPlot](#downloading-sedplot)
 1. [User Instructions](#user-instructions)
 1. [Citing Works](#citing-works)
 
@@ -38,7 +38,7 @@ TODO :: BIBTEX FORMAT
 
 If you cite us in your research, please consider sending an email to our lead developer at `dnlvickers5@gmail.com`. We would love to add you to the [Citing Works](#citing-works) section of this documentation.
 
-## Downloading EEGView
+## Downloading SedPlot
 
 ### Recommended For Physicians
 
@@ -69,7 +69,7 @@ Install python and ensure that it is accessible via the command line with `py --
     unzip ffmpeg.zip -d ffmpeg  # unzip ffmpeg and store in a local directory
 ```
 
-The code can be run directly from the terminal with `python EEGView.py` or installed as a binary into the `dist` directory with `pyinstaller EEGView.py --noconfirm --onefile --add-data "ffmpeg:ffmpeg"`.
+The code can be run directly from the terminal with `python SedPlot.py` or installed as a binary into the `dist` directory with `pyinstaller SedPlot.py --noconfirm --onefile --add-data "ffmpeg:ffmpeg"`.
 
 #### MacOS
 
@@ -88,7 +88,7 @@ You will then have two options. If you want to run locally via python it is easi
 
 ```bash
     brew install ffmpeg  # install ffmpeg globally
-    python EEGView.py  # run the GUI from the command line
+    python SedPlot.py  # run the GUI from the command line
 ```
 
 To build the binary yourself, you will need to get a local ffmpeg and build the binary in the `dist` directory like so:
@@ -96,7 +96,7 @@ To build the binary yourself, you will need to get a local ffmpeg and build the 
 ```bash
     curl -L -o ffmpeg.zip https://evermeet.cx/ffmpeg/getrelease/zip  # get the zipped ffmpeg binaries
     unzip ffmpeg.zip -d ffmpeg  # unzip ffmpeg and store in the ffmpeg directory
-    pyinstaller EEGView.py --noconfirm --onefile --add-data "ffmpeg:ffmpeg"  # build the binary
+    pyinstaller SedPlot.py --noconfirm --onefile --add-data "ffmpeg:ffmpeg"  # build the binary
 ```
 
 #### Linux (Ubuntu)
@@ -115,7 +115,7 @@ From here, you can either run it from the command line with python or install th
 
 ```bash
     sudo apt install ffmpeg  # install ffmpeg globally
-    python EEGView.py  # run the code
+    python SedPlot.py  # run the code
 ```
 
 To build the binary yourself, you will need to get a local ffmpeg and build the binary in the `dist` directory like so:
@@ -124,7 +124,7 @@ To build the binary yourself, you will need to get a local ffmpeg and build the 
     curl -L -o ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz  # fetch the zipped ffmpeg binaries
     tar -xf ffmpeg.tar.xz --strip-components=1 -C ffmpeg  # unzip and store in the ffmpeg directory
 
-    pyinstaller EEGView.py --noconfirm --onefile --add-data "ffmpeg;ffmpeg"  # build the binary and store in dist
+    pyinstaller SedPlot.py --noconfirm --onefile --add-data "ffmpeg;ffmpeg"  # build the binary and store in dist
 ```
 
 ## User Instructions
