@@ -142,18 +142,8 @@ def get_input_file():
 
 def get_output_file():
     file_path = asksaveasfilename(
-        defaultextension=".mp4",  # Default extension if none is provided by the user
-        filetypes=[
-            ("Video files", "*.mp4"),
-            ("GIF files", "*.gif"),
-            ("PNG files", "*.png"),
-            ("JPG files", "*.jpg"),
-            ("PDF files", "*.pdf"),
-            ("SVG files", "*.svg"),
-            ("CSV files", "*.csv"),
-            ("STL files", "*.stl"),
-            ("All files", "*.*")
-        ]
+        defaultextension=default_output_filetype,  # Default extension if none is provided by the user
+        filetypes=supported_output_filetypes
     )
     if file_path:  # Check if a file path was selected (not canceled)
         out_entry.config(state='normal')
@@ -203,6 +193,21 @@ file_label.grid(row=0, column=0)
 file_entry.grid(row=0, column=1)
 file_button.grid(row=0, column=2)
 # output
+supported_output_filetypes = [
+    ("GIF files", "*.gif"),
+    ("PNG files", "*.png"),
+    ("JPG files", "*.jpg"),
+    ("PDF files", "*.pdf"),
+    ("SVG files", "*.svg"),
+    ("CSV files", "*.csv"),
+    ("STL files", "*.stl"),
+    ("All files", "*.*")
+]  # sets the list of supported files
+default_output_filetype = ".png" # sets the default file to PNG images
+if ffmpeg_location is not None:
+    # if FFMPEG was found, add MP4 video as a supported file type and set it to default
+    supported_output_filetypes = [("Video files", "*.mp4")] + supported_output_filetypes
+    default_output_filetype = ".mp4"
 out_file = tk.StringVar(value='')
 out_label = tk.Label(root, text='Output File', font=('calibre', 10, 'bold'))
 out_button = tk.Button(root, text="Select Output", font=10, command=get_output_file)
