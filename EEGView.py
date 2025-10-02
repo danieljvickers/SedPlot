@@ -19,7 +19,9 @@ def find_ffmpeg():
     if hasattr(sys, '_MEIPASS'):  # This is true if you installed as a binary
         # do a platform specific search for the ffmpeg executable
         if platform.system() == "Windows":
-            ffmpeg_location = os.path.join(sys._MEIPASS, 'ffmpeg', 'ffmpeg-7.1.1-essentials_build', 'bin', 'ffmpeg.exe')
+            for root, dirs, files in os.walk(os.path.join(sys._MEIPASS, 'ffmpeg')):  # searches the ffmpeg temp folder
+                if "ffmpeg.exe" in files:
+                    ffmpeg_location = os.path.join(root, "ffmpeg.exe")
         elif platform.system() == "Darwin": # MacOS
             ffmpeg_location = os.path.join(sys._MEIPASS, 'ffmpeg', 'ffmpeg')
         else:
@@ -32,7 +34,9 @@ def find_ffmpeg():
 
     if (not ffmpeg_location) and os.path.isdir('ffmpeg'):  # if this is not a binary, and there is a local ffmpeg directory
         if platform.system() == "Windows":
-            ffmpeg_location = os.path.join('ffmpeg', 'ffmpeg-7.1.1-essentials_build', 'bin', 'ffmpeg.exe')
+            for root, dirs, files in os.walk('ffmpeg'):  # searches the ffmpeg temp folder
+                if "ffmpeg.exe" in files:
+                    ffmpeg_location = os.path.join(root, "ffmpeg.exe")
         elif platform.system() == "Darwin": # MacOS
             ffmpeg_location = os.path.join('ffmpeg', 'ffmpeg')
         else:
@@ -45,10 +49,12 @@ def find_ffmpeg():
             print(f"WARN :: Searched for FFMPEG at {ffmpeg_location} but found nothing. Searching globally...")
             ffmpeg_location = None  # reset the location
 
-    if not ffmpeg_location:  # if ffmpeg is not local, fall back to the global ffmpeg installation
-        assert shutil.which("ffmpeg") is not None, "ERROR :: FFMPEG not found locally and is not installed. Install FFMPEG to resolve."  # if it wasn't found, rase an exception
+    if not os.path.isfile(ffmpeg_location):  # if ffmpeg is not local, fall back to the global ffmpeg installation
         ffmpeg_location = shutil.which("ffmpeg")  # sets the lcoation to the global installation
-        print(f"INFO :: Found FFMPEG globally. Using FFMPEG at {ffmpeg_location}")
+        if not ffmpeg_location:
+            print("ERROR :: FFMPEG not found locally and is not installed. Video (MP4) file generation will be disables. Install FFMPEG to resolve.")  # if it wasn't found, rase an exception
+        else:
+            print(f"INFO :: Found FFMPEG globally. Using FFMPEG at {ffmpeg_location}")
     
     return ffmpeg_location
 
