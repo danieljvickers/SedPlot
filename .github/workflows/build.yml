@@ -57,7 +57,8 @@ jobs:
         if: runner.os == 'macOS'
         shell: bash
         run: |
-          echo "$MAC_CERT_P12_BASE64" | base64 --decode > developer_id.p12
+          Echo "$MAC_CERT_P12_BASE64"
+          printf "%s" "$MAC_CERT_P12_BASE64" | base64 --decode > developer_id.p12
           cat developer_id.p12
           echo $MAC_CERT_PASSWORD
           security import developer_id.p12 -k ~/Library/Keychains/login.keychain-db -P "$MAC_CERT_PASSWORD" -T /usr/bin/codesign
