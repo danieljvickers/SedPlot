@@ -53,20 +53,18 @@ jobs:
         run: |
           pyinstaller SedPlot.py --noconfirm --onefile --add-data "ffmpeg:ffmpeg"
 
-      - name: Import Apple signing certificate (macOS only)
+      - name: Import Apple signing certificate
         if: runner.os == 'macOS'
         shell: bash
         run: |
           echo "$MAC_CERT_P12_BASE64" | base64 --decode > developer_id.p12
-          security create-keychain -p "" build.keychain
-          security import developer_id.p12 -k ~/Library/Keychains/build.keychain -P "$MAC_CERT_PASSWORD" -T /usr/bin/codesign
-          security list-keychains -s ~/Library/Keychains/build.keychain
-          security default-keychain -s ~/Library/Keychains/build.keychain
-          security unlock-keychain -p "" ~/Library/Keychains/build.keychain
-          security set-key-partition-list -S apple-tool:,apple: -s -k "" ~/Library/Keychains/build.keychain
+	  cat developer_id.p12
+	  echo $MAC_CERT_PASSWORD
+          security import developer_id.p12 -k ~/Library/Keychains/login.keychain-db -P "$MAC_CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -k "$MAC_CERT_PASSWORD" ~/Library/Keychains/login.keychain-db
           rm developer_id.p12
 
-      - name: Code sign binary (macOS only)
+      - name: Code sign binary
         if: runner.os == 'macOS'
         shell: bash
         run: |
@@ -77,7 +75,7 @@ jobs:
           codesign --force --options runtime --timestamp --sign "$IDENTITY" "$BINARY_PATH"
           codesign --verify --verbose=4 "$BINARY_PATH"
 
-      - name: Notarize app (macOS only)
+      - name: Notarize Binary
         if: runner.os == 'macOS'
         shell: bash
         run: |
