@@ -53,6 +53,44 @@ jobs:
         run: |
           pyinstaller SedPlot.py --noconfirm --onefile --add-data "ffmpeg:ffmpeg"
 
+      - name: Import Apple signing certificate (macOS only)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          echo "$MAC_CERT_P12_BASE64" | base64 --decode > developer_id.p12
+          security create-keychain -p "" build.keychain
+          security import developer_id.p12 -k ~/Library/Keychains/build.keychain -P "$MAC_CERT_PASSWORD" -T /usr/bin/codesign
+          security list-keychains -s ~/Library/Keychains/build.keychain
+          security default-keychain -s ~/Library/Keychains/build.keychain
+          security unlock-keychain -p "" ~/Library/Keychains/build.keychain
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" ~/Library/Keychains/build.keychain
+          rm developer_id.p12
+
+      - name: Code sign binary (macOS only)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          BINARY_PATH=$(ls dist/* | head -n 1)
+          echo "Signing $BINARY_PATH"
+          IDENTITY=$(security find-identity -p codesigning -v | grep "Developer ID Application" | head -n1 | awk '{print substr($0, index($0,$2))}' | sed 's/^[^"]*"//;s/".*//')
+          echo "Using identity: $IDENTITY"
+          codesign --force --options runtime --timestamp --sign "$IDENTITY" "$BINARY_PATH"
+          codesign --verify --verbose=4 "$BINARY_PATH"
+
+      - name: Notarize app (macOS only)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          BINARY_PATH=$(ls dist/* | head -n 1)
+          echo "$AC_API_KEY" > AuthKey.p8
+          xcrun notarytool submit "$BINARY_PATH" \
+            --key AuthKey.p8 \
+            --key-id "$AC_KEY_ID" \
+            --issuer "$AC_ISSUER_ID" \
+            --wait
+          xcrun stapler staple "$BINARY_PATH"
+          xcrun stapler validate "$BINARY_PATH"
+
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
