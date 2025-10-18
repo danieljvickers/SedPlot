@@ -35,10 +35,14 @@ jobs:
       - name: Import Apple signing certificate
         if: runner.os == 'macOS'
         shell: bash
+        env:
+          MAC_CERT_P12_BASE64: ${{ secrets.MAC_CERT_P12_BASE64 }}
+          MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
         run: |
-          echo ${{ secrets.MAC_CERT_P12_BASE64 }}
+          echo "$MAC_CERT_P12_BASE64"
+          echo "${#MAC_CERT_P12_BASE64} characters in MAC_CERT_P12_BASE64"
           echo 1
-          ${{ secrets.MAC_CERT_P12_BASE64 }} | base64 --decode > developer_id.p12
+          printf "%s" "$MAC_CERT_P12_BASE64" | base64 --decode > developer_id.p12
           cat developer_id.p12
           echo $MAC_CERT_PASSWORD
           security import developer_id.p12 -k ~/Library/Keychains/login.keychain-db -P "$MAC_CERT_PASSWORD" -T /usr/bin/codesign
