@@ -39,11 +39,11 @@ jobs:
           MAC_CERT_P12_BASE64: ${{ secrets.MAC_CERT_P12_BASE64 }}
           MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
         run: |
-          printf "%s" "$MAC_CERT_P12_BASE64" | base64 --decode > 
+          printf "%s" "$MAC_CERT_P12_BASE64" | base64 --decode > developer_id.p12
           echo "${#MAC_CERT_PASSWORD} characters in MAC_CERT_PASSWORD"
           security import developer_id.p12 -k ~/Library/Keychains/login.keychain-db -P "$MAC_CERT_PASSWORD" -T /usr/bin/codesign
           echo "Imported developer key"
-          security set-key-partition-list -S apple-tool:,apple: -k "$MAC_CERT_PASSWORD" ~/Library/Keychains/login.keychain-db
+          security set-key-partition-list -S apple-tool:,apple: -k "" ~/Library/Keychains/login.keychain-db
           echo "Set the partition list"
           rm developer_id.p12
 
