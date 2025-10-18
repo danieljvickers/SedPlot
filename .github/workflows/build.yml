@@ -39,12 +39,8 @@ jobs:
           MAC_CERT_P12_BASE64: ${{ secrets.MAC_CERT_P12_BASE64 }}
           MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
         run: |
-          echo "$MAC_CERT_P12_BASE64"
-          echo "${#MAC_CERT_P12_BASE64} characters in MAC_CERT_P12_BASE64"
-          echo 1
           printf "%s" "$MAC_CERT_P12_BASE64" | base64 --decode > developer_id.p12
-          cat developer_id.p12
-          echo $MAC_CERT_PASSWORD
+          echo "$MAC_CERT_PASSWORD is the apple certification password"
           security import developer_id.p12 -k ~/Library/Keychains/login.keychain-db -P "$MAC_CERT_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -k "$MAC_CERT_PASSWORD" ~/Library/Keychains/login.keychain-db
           rm developer_id.p12
