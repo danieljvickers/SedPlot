@@ -100,8 +100,6 @@ jobs:
         if: runner.os == 'macOS'
         shell: bash
         run: |
-          APP_PATH="dist/hello"
-          mv "$APP_PATH" "$APP_PATH.app"
           APP_EXECUTABLE=$(find "dist/hello.app" -type f -name "hello" -perm +111 | head -n 1)
           IDENTITY=$(security find-identity -p codesigning -v | grep -E 'Developer ID Application|Mac Developer' | head -n1 | awk -F\" '{print $2}')
 
