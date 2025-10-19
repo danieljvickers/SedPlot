@@ -96,10 +96,6 @@ jobs:
           echo "Signing App at: dist/SedPlot.app"
           codesign --verbose=4 --force --options runtime --timestamp --entitlements .github/codesign_xml/entitlements.plist --sign "$IDENTITY" "dist/SedPlot.app"
 
-          # Sign all dylib files within the FFmpeg folder
-          find "dist/SedPlot.app/Contents/Resources/ffmpeg" -name "*.dylib" -exec codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" {} \;
-          find "dist/SedPlot.app/Contents/Resources/ffmpeg" -name "*.so" -exec codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" {} \;
-
           codesign --verify --verbose=4 "dist/SedPlot.app"
 
       - name: Notarize Binary
