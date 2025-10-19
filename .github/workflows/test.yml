@@ -64,8 +64,32 @@ jobs:
           
 
           chmod +x hello.py
-          cp .github/specs/hello.spec .
-          pyinstaller hello.spec --noconfirm
+          pyinstaller --windowed hello.py --noconfirm --onedir --name "hello"
+
+          APP_NAME="hello"
+          APP_PATH="dist/${APP_NAME}.app"
+          EXEC_PATH="${APP_PATH}/Contents/MacOS"
+          mkdir -p "${EXEC_PATH}"
+          mkdir -p "${APP_PATH}/Contents/Resources"
+
+          mv "dist/${APP_NAME}/${APP_NAME}" "${EXEC_PATH}/"
+          cp -R "dist/${APP_NAME}/_internal" "${APP_PATH}/Contents/Resources/"
+
+          cat > "${APP_PATH}/Contents/Info.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+            "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleName</key><string>${APP_NAME}</string>
+            <key>CFBundleExecutable</key><string>${APP_NAME}</string>
+            <key>CFBundleIdentifier</key><string>com.example.${APP_NAME}</string>
+            <key>CFBundleVersion</key><string>1.0</string>
+            <key>CFBundlePackageType</key><string>APPL</string>
+          </dict>
+          </plist>
+          EOF
+
 
           ls -R dist/
 
