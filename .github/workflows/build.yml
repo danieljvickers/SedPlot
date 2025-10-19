@@ -87,6 +87,10 @@ jobs:
           echo "Using identity: $IDENTITY"
           security unlock-keychain -p "" build.keychain
 
+          ls -R "dist/SedPlot.app/Contents/Resources/ffmpeg"
+          echo "\n"
+          ls -R "dist/SedPlot.app/Contents/Resources/"
+
           codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" "$FFMPEG_BINARY"
           codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" "$APP_EXECUTABLE"
           codesign --verbose=4 --force --options runtime --timestamp --entitlements .github/codesign_xml/entitlements.plist --sign "$IDENTITY" "dist/SedPlot.app"
