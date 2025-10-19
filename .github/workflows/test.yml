@@ -100,19 +100,38 @@ jobs:
         if: runner.os == 'macOS'
         shell: bash
         run: |
+          APP_BUNDLE="dist/hello.app"
           APP_EXECUTABLE=$(find "dist/hello.app" -type f -name "hello" -perm +111 | head -n 1)
           IDENTITY=$(security find-identity -p codesigning -v | grep -E 'Developer ID Application|Mac Developer' | head -n1 | awk -F\" '{print $2}')
+          ENTITLEMENTS_FILE=".github/codesign_xml/entitlements_test.plist"
+          SIGN_OPTIONS="--verbose=4 --force --options runtime --timestamp --sign \"$IDENTITY\""
 
           echo "Using identity: $IDENTITY"
           security unlock-keychain -p "" build.keychain
 
-          echo "Signing hello Executable at: $APP_EXECUTABLE"
-          codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" "$APP_EXECUTABLE"
+          echo "--- 1. Signing Framework Libraries (.dylib) ---"
+          find "$APP_BUNDLE/Contents/Frameworks" -type f -name "*.dylib" -exec codesign $SIGN_OPTIONS --preserve-metadata=identifier,entitlements {} \;
 
-          echo "Signing App at: dist/hello.app"
-          codesign --verbose=4 --force --deep --options runtime --timestamp --entitlements .github/codesign_xml/entitlements_test.plist --sign "$IDENTITY" "dist/hello.app"
+          # 2. Sign the Embedded Python Framework (crucial step for PyInstaller/cx_Freeze)
+          # Note: Since Python.framework contains executables, we sign the whole framework deeply.
+          echo "--- 2. Signing Python.framework ---"
+          codesign --deep $SIGN_OPTIONS "$APP_BUNDLE/Contents/Frameworks/Python.framework"
 
-          codesign --verify --verbose=4 "dist/hello.app"
+          # 3. Sign the Main Executable (This was your first step, which is correct)
+          echo "--- 3. Signing Main Executable at: $APP_EXECUTABLE ---"
+          codesign $SIGN_OPTIONS "$APP_EXECUTABLE"
+
+          # 4. Sign the Final Application Bundle
+          # Since we have manually signed everything, this step will be clean and apply the entitlements.
+          echo "--- 4. Signing App Bundle at: $APP_BUNDLE ---"
+          codesign $SIGN_OPTIONS --entitlements "$ENTITLEMENTS_FILE" "$APP_BUNDLE"
+
+          # 5. Verification
+          echo "--- 5. Verifying App Bundle Signature ---"
+          codesign --verify --verbose=4 "$APP_BUNDLE"
+
+          echo "--- Codesigning complete and verified! ---"
+
 
       - name: Notarize Binary
         if: runner.os == 'macOS'
