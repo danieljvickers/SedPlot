@@ -43,7 +43,6 @@ jobs:
           echo "${#MAC_CERT_PASSWORD} characters in MAC_CERT_PASSWORD"
           security import developer_id.p12 -k ~/Library/Keychains/login.keychain-db -P "$MAC_CERT_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -k "" ~/Library/Keychains/login.keychain-db || true
-          security find-identity -v -p codesigning
           rm developer_id.p12
 
       - name: Download FFmpeg
@@ -76,14 +75,13 @@ jobs:
           echo "Signing $BINARY_PATH"
           security find-identity -p codesigning -v
           echo "Priting feeding it to grep"
-          security find-identity -p codesigning -v | grep "Developer ID Application"
+          security find-identity -p codesigning -v | grep -E 'Developer ID Application|Mac Developer'
           echo "Taking top line"
-          security find-identity -p codesigning -v | grep "Developer ID Application" | head -n1
+          security find-identity -p codesigning -v | grep -E 'Developer ID Application|Mac Developer' | head -n1
           echo "using awk"
-          security find-identity -p codesigning -v | grep "Developer ID Application" | head -n1 | awk '{print substr($0, index($0,$2))}'
+          security find-identity -p codesigning -v | grep -E 'Developer ID Application|Mac Developer' | head -n1 | awk -F\" '{print $2}'
           echo "using sed to replace"
-          security find-identity -p codesigning -v | grep "Developer ID Application" | head -n1 | awk '{print substr($0, index($0,$2))}' | sed 's/^[^"]*"//;s/".*//')
-          IDENTITY=$(security find-identity -p codesigning -v | grep "Developer ID Application" | head -n1 | awk '{print substr($0, index($0,$2))}' | sed 's/^[^"]*"//;s/".*//')
+          IDENTITY=$(security find-identity -p codesigning -v | grep -E 'Developer ID Application|Mac Developer' | head -n1 | awk -F\" '{print $2}')
           echo "Using identity: $IDENTITY"
           codesign --force --options runtime --timestamp --sign "$IDENTITY" "$BINARY_PATH"
           codesign --verify --verbose=4 "$BINARY_PATH"
