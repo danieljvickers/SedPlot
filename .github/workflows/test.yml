@@ -64,7 +64,8 @@ jobs:
           
 
           chmod +x hello.py
-          pyinstaller .github/specs/hello.spec --noconfirm
+          cp .github/specs/hello.spec .
+          pyinstaller hello.spec --noconfirm
 
           ls -R dist/
 
