@@ -81,21 +81,19 @@ jobs:
           APP_PATH="dist/SedPlot"
           mv "$APP_PATH" "$APP_PATH.app"
           APP_EXECUTABLE="dist/SedPlot.app/Contents/MacOS/SedPlot"
-          FFMPEG_BINARY="dist/SedPlot.app/Contents/Resources/ffmpeg/ffmpeg"
+          FFMPEG_BINARY=$(find "dist/SedPlot.app" -type f -name "ffmpeg" -perm +111 | head -n 1)
           IDENTITY=$(security find-identity -p codesigning -v | grep -E 'Developer ID Application|Mac Developer' | head -n1 | awk -F\" '{print $2}')
 
           echo "Using identity: $IDENTITY"
           security unlock-keychain -p "" build.keychain
 
-          ls dist
-          ls dist/SedPlot.app
-          ls -R dist/SedPlot.app
-          ls -R "dist/SedPlot.app/Contents/Resources/ffmpeg"
-          echo "\n"
-          ls -R "dist/SedPlot.app/Contents/Resources/"
-
+          echo "Signing FFmpeg at: $FFMPEG_BINARY"
           codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" "$FFMPEG_BINARY"
+
+          echo "Signing SedPlot Executable at: $APP_EXECUTABLE"
           codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" "$APP_EXECUTABLE"
+
+          echo "Signing App at: dist/SedPlot.app"
           codesign --verbose=4 --force --options runtime --timestamp --entitlements .github/codesign_xml/entitlements.plist --sign "$IDENTITY" "dist/SedPlot.app"
 
           # Sign all dylib files within the FFmpeg folder
