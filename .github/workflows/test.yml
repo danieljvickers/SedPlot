@@ -71,11 +71,13 @@ jobs:
           EXEC_PATH="${APP_PATH}/Contents/MacOS"
           mkdir -p "${EXEC_PATH}"
           mkdir -p "${APP_PATH}/Contents/Resources"
+          mkdir -p "${APP_PATH}/Versions/Current"
 
           mv "dist/${APP_NAME}/${APP_NAME}" "${EXEC_PATH}/"
           cp -R "dist/${APP_NAME}/_internal" "${APP_PATH}/Contents/Resources/"
+          rm -rdf dist/hello
 
-          cat > "${APP_PATH}/Contents/Info.plist" <<EOF
+          cat > "${APP_PATH}/Versions/Current/Info.plist" <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
             "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -91,7 +93,7 @@ jobs:
           EOF
 
 
-          ls -R dist/
+          tree -aF dist/
 
 
       - name: Code sign binary
