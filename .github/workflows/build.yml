@@ -72,18 +72,9 @@ jobs:
         shell: bash
         run: |
           BINARY_PATH=$(ls dist/* | head -n 1)
-          echo "Signing $BINARY_PATH"
-          security find-identity -p codesigning -v
-          echo "Priting feeding it to grep"
-          security find-identity -p codesigning -v | grep -E 'Developer ID Application|Mac Developer'
-          echo "Taking top line"
-          security find-identity -p codesigning -v | grep -E 'Developer ID Application|Mac Developer' | head -n1
-          echo "using awk"
-          security find-identity -p codesigning -v | grep -E 'Developer ID Application|Mac Developer' | head -n1 | awk -F\" '{print $2}'
-          echo "using sed to replace"
           IDENTITY=$(security find-identity -p codesigning -v | grep -E 'Developer ID Application|Mac Developer' | head -n1 | awk -F\" '{print $2}')
           echo "Using identity: $IDENTITY"
-          codesign --force --options runtime --timestamp --sign "$IDENTITY" "$BINARY_PATH"
+          codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" "$BINARY_PATH"
           codesign --verify --verbose=4 "$BINARY_PATH"
 
       - name: Notarize Binary
