@@ -27,6 +27,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
+          brew install python-tk
   
       - name: Import Apple signing certificate
         if: runner.os == 'macOS'
@@ -63,7 +64,7 @@ jobs:
           
 
           chmod +x hello.py
-          pyinstaller --windowed hello.py --noconfirm --onedir --name "hello"
+          pyinstaller .github/specs/hello.spec --noconfirm
 
           ls -R dist/
 
