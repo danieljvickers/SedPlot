@@ -12,7 +12,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [macos-latest]
+#        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
       - uses: actions/checkout@v4
@@ -40,7 +41,6 @@ jobs:
           MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
         run: |
           printf "%s" "$MAC_CERT_P12_BASE64" | base64 --decode > developer_id.p12
-          echo "${#MAC_CERT_PASSWORD} characters in MAC_CERT_PASSWORD"
           security import developer_id.p12 -k ~/Library/Keychains/login.keychain-db -P "$MAC_CERT_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -k "" ~/Library/Keychains/login.keychain-db || true
           rm developer_id.p12
@@ -74,7 +74,7 @@ jobs:
           BINARY_PATH=$(ls dist/* | head -n 1)
           IDENTITY=$(security find-identity -p codesigning -v | grep -E 'Developer ID Application|Mac Developer' | head -n1 | awk -F\" '{print $2}')
           echo "Using identity: $IDENTITY"
-          codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" "$BINARY_PATH"
+          codesign --verbose=4 --force --options runtime --timestamp=none --sign "$IDENTITY" "$BINARY_PATH"
           codesign --verify --verbose=4 "$BINARY_PATH"
 
       - name: Notarize Binary
@@ -85,9 +85,11 @@ jobs:
           AC_KEY_ID: ${{ secrets.AC_KEY_ID }}
           AC_ISSUER_ID: ${{ secrets.AC_ISSUER_ID }}
         run: |
-          BINARY_PATH=$(ls dist/* | head -n 1)
-          echo "$AC_API_KEY" > AuthKey.p8
-          xcrun notarytool submit "$BINARY_PATH" \
+          mv dist dist_old
+          mkdir dist
+          BINARY_PATH=$(ls dist_old/* | head -n 1)
+          zip dist/SedPlot.zip "$BINARY_PATH"
+          xcrun notarytool submit SedPlot.zip \
             --key AuthKey.p8 \
             --key-id "$AC_KEY_ID" \
             --issuer "$AC_ISSUER_ID" \
