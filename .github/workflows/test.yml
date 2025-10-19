@@ -46,9 +46,24 @@ jobs:
       - name: Build with PyInstaller
         shell: bash
         run: |
-          echo "print('hello world')" > hello.py
+          cat > hello.py <<'PY'
+          #!/usr/bin/env python3
+          import tkinter as tk
+          from tkinter import messagebox
+
+          def main():
+              root = tk.Tk()
+              root.withdraw()  # hide main window
+              messagebox.showinfo("Hello", "Hello, world!")
+              root.destroy()
+
+          if __name__ == "__main__":
+              main()
+          PY
+          
+
           chmod +x hello.py
-          pyinstaller hello.py --noconfirm --onedir --name "hello"
+          pyinstaller --windowed hello.py --noconfirm --onedir --name "hello"
 
           ls -R dist/
 
