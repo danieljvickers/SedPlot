@@ -16,18 +16,22 @@ import matplotlib.pyplot as plt
 # Look for ffmpeg next to the executable or in system path and store in ffmpeg_location
 def find_ffmpeg():
     ffmpeg_location = None
-    if hasattr(sys, '_MEIPASS'):  # This is true if you installed as a binary
-        # do a platform specific search for the ffmpeg executable
-        if platform.system() == "Windows":
-            for root, dirs, files in os.walk(os.path.join(sys._MEIPASS, 'ffmpeg')):  # searches the ffmpeg temp folder
-                if "ffmpeg.exe" in files:
-                    ffmpeg_location = os.path.join(root, "ffmpeg.exe")
-        elif platform.system() == "Darwin": # MacOS
-            ffmpeg_location = os.path.join(sys._MEIPASS, 'ffmpeg', 'ffmpeg')
-        else:
-            ffmpeg_location = os.path.join(sys._MEIPASS, 'ffmpeg', 'bin', 'ffmpeg')
 
-        # set various environment variables to ensure that the executable finds ffmpeg
+    if hasattr(sys, '_MEIPASS'):  # This is true if you installed as a binary
+        # Determine the expected executable name
+        exe_name = None
+        if platform.system() == "Windows":
+            exe_name = "ffmpeg.exe"
+        else: # macOS and Linux
+            exe_name = "ffmpeg"
+
+        # do a search for the ffmpeg executable
+        for root, dirs, files in os.walk(os.path.join(sys._MEIPASS, 'ffmpeg')):  # searches the ffmpeg temp folder
+            if exe_name in files:
+                ffmpeg_location = os.path.join(root, exe_name)
+                break
+
+        # verify this file exists
         if not os.path.isfile(ffmpeg_location):  # if we find the file, use it
             print(f"WARN :: FFMPEG was not installed in this binary. Searching for other FFMPEG installations...")
             ffmpeg_location = None  # reset the location
