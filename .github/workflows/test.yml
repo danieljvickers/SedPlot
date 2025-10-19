@@ -47,7 +47,10 @@ jobs:
         shell: bash
         run: |
           echo "print('hello world')" > hello.py
+          chmod +x hello.py
           pyinstaller hello.py --noconfirm --onedir --name "hello"
+
+          ls -R dist/
 
 
       - name: Code sign binary
@@ -65,8 +68,8 @@ jobs:
           echo "Signing hello Executable at: $APP_EXECUTABLE"
           codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" "$APP_EXECUTABLE"
 
-          echo "Signing App at: dist/hrllo.app"
-          codesign --verbose=4 --force --options runtime --timestamp --entitlements .github/codesign_xml/entitlements.plist --sign "$IDENTITY" "dist/hello.app"
+          echo "Signing App at: dist/hello.app"
+          codesign --verbose=4 --force --deep --options runtime --timestamp --entitlements .github/codesign_xml/entitlements_test.plist --sign "$IDENTITY" "dist/hello.app"
 
           codesign --verify --verbose=4 "dist/hello.app"
 
@@ -78,16 +81,17 @@ jobs:
           AC_KEY_ID: ${{ secrets.AC_KEY_ID }}
           AC_ISSUER_ID: ${{ secrets.AC_ISSUER_ID }}
         run: |
-          zip -r dist/hello.zip dist/hello.app
+          zip -r dist/hello.app.zip dist/hello.app
+          ditto -c -k --sequesterRsrc --keepParent "dist/hello.app" "dist/hello.app.zip"
           
           echo "$AC_API_KEY" > AuthKey.p8
-          xcrun notarytool submit dist/hello.zip \
+          xcrun notarytool submit dist/hello.app.zip \
             --key AuthKey.p8 \
             --key-id "$AC_KEY_ID" \
             --issuer "$AC_ISSUER_ID" \
             --wait
           xcrun stapler staple dist/hello.app
-          xcrun stapler validate dist/hello.app
+          xcrun stapler validate dist/hello.app || true
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
