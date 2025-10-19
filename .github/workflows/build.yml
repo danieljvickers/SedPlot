@@ -80,7 +80,7 @@ jobs:
         run: |
           APP_PATH="dist/SedPlot"
           mv "$APP_PATH" "$APP_PATH.app"
-          APP_EXECUTABLE="dist/SedPlot.app/Contents/MacOS/SedPlot"
+          APP_EXECUTABLE=$(find "dist/SedPlot.app" -type f -name "SedPlot" -perm +111 | head -n 1)
           FFMPEG_BINARY=$(find "dist/SedPlot.app" -type f -name "ffmpeg" -perm +111 | head -n 1)
           IDENTITY=$(security find-identity -p codesigning -v | grep -E 'Developer ID Application|Mac Developer' | head -n1 | awk -F\" '{print $2}')
 
