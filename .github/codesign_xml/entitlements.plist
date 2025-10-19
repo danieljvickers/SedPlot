@@ -10,5 +10,10 @@
     <true/>
     <key>com.apple.security.app-sandbox</key>
     <false/>
+
+    <key>com.apple.security.files.downloads.writable</key>
+    <true/>
+    <key>com.apple.security.files.user-selected.writable</key>
+    <true/>
 </dict>
 </plist>
