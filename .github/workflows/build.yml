@@ -43,6 +43,7 @@ jobs:
           echo "${#MAC_CERT_PASSWORD} characters in MAC_CERT_PASSWORD"
           security import developer_id.p12 -k ~/Library/Keychains/login.keychain-db -P "$MAC_CERT_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -k "" ~/Library/Keychains/login.keychain-db || true
+          security find-identity -v -p codesigning
           rm developer_id.p12
 
       - name: Download FFmpeg
