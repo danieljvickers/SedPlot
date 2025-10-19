@@ -93,6 +93,10 @@ jobs:
           echo "Signing SedPlot Executable at: $APP_EXECUTABLE"
           codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" "$APP_EXECUTABLE"
 
+          echo "Signing all internal dynamic libraries (.dylib & .so)"
+          find "dist/SedPlot.app" -type f -name "*.dylib" -exec codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" {} \;
+          find "dist/SedPlot.app" -type f -name "*.so" -exec codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" {} \;
+
           echo "Signing App at: dist/SedPlot.app"
           codesign --verbose=4 --force --options runtime --timestamp --entitlements .github/codesign_xml/entitlements.plist --sign "$IDENTITY" "dist/SedPlot.app"
 
