@@ -87,6 +87,9 @@ jobs:
           echo "Using identity: $IDENTITY"
           security unlock-keychain -p "" build.keychain
 
+          ls dist
+          ls dist/SedPlot.app
+          ls -R dist/SedPlot.app
           ls -R "dist/SedPlot.app/Contents/Resources/ffmpeg"
           echo "\n"
           ls -R "dist/SedPlot.app/Contents/Resources/"
