@@ -89,7 +89,11 @@ jobs:
 
           codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" "$FFMPEG_BINARY"
           codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" "$APP_EXECUTABLE"
-          codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" "dist/SedPlot.app"
+          codesign --verbose=4 --force --options runtime --timestamp --entitlements .github/codesign_xml/entitlements.plist --sign "$IDENTITY" "dist/SedPlot.app"
+
+          # Sign all dylib files within the FFmpeg folder
+          find "dist/SedPlot.app/Contents/Resources/ffmpeg" -name "*.dylib" -exec codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" {} \;
+          find "dist/SedPlot.app/Contents/Resources/ffmpeg" -name "*.so" -exec codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" {} \;
 
           codesign --verify --verbose=4 "dist/SedPlot.app"
 
@@ -109,8 +113,8 @@ jobs:
             --key-id "$AC_KEY_ID" \
             --issuer "$AC_ISSUER_ID" \
             --wait
-          xcrun stapler staple dist/SedPlot.zip
-          xcrun stapler validate dist/SedPlot.zip
+          xcrun stapler staple dist/SedPlot.app
+          xcrun stapler validate dist/SedPlot.app
 
 
       - name: Upload artifact
