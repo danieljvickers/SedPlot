@@ -116,17 +116,22 @@ jobs:
           echo "--- 2. Signing Python.framework ---"
           codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" "$APP_BUNDLE/Contents/Frameworks/Python.framework"
 
+          if [ -f "$APP_BUNDLE/Contents/Frameworks/Python" ]; then
+              echo "--- 3. Signing Python executable stub in Frameworks/ ---"
+              codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" "$APP_BUNDLE/Contents/Frameworks/Python"
+          fi
+
           # 3. Sign the Main Executable (This was your first step, which is correct)
-          echo "--- 3. Signing Main Executable at: $APP_EXECUTABLE ---"
+          echo "--- 4. Signing Main Executable at: $APP_EXECUTABLE ---"
           codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" "$APP_EXECUTABLE"
 
           # 4. Sign the Final Application Bundle
           # Since we have manually signed everything, this step will be clean and apply the entitlements.
-          echo "--- 4. Signing App Bundle at: $APP_BUNDLE ---"
+          echo "--- 5. Signing App Bundle at: $APP_BUNDLE ---"
           codesign --verbose=4 --force --options runtime --timestamp --sign "$IDENTITY" --entitlements "$ENTITLEMENTS_FILE" "$APP_BUNDLE"
 
           # 5. Verification
-          echo "--- 5. Verifying App Bundle Signature ---"
+          echo "--- 6. Verifying App Bundle Signature ---"
           codesign --verify --verbose=4 "$APP_BUNDLE"
 
           echo "--- Codesigning complete and verified! ---"
