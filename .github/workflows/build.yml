@@ -93,7 +93,7 @@ jobs:
           AC_KEY_ID: ${{ secrets.AC_KEY_ID }}
           AC_ISSUER_ID: ${{ secrets.AC_ISSUER_ID }}
         run: |
-          BINARY_PATH=$(ls dist_old/* | head -n 1)
+          BINARY_PATH=$(ls dist/* | head -n 1)
           mv "$BINARY_PATH" .
           echo "$AC_API_KEY" > AuthKey.p8
           zip dist/SedPlot.zip SedPlot
