@@ -92,7 +92,7 @@ jobs:
           </plist>
           EOF
 
-
+          brew install tree
           tree -aF dist/
 
 
