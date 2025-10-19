@@ -1,4 +1,4 @@
-name: Build Binaries with FFmpeg
+name: Test
 
 on:
   push:
