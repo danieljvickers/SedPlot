@@ -74,6 +74,15 @@ jobs:
         run: |
           BINARY_PATH=$(ls dist/* | head -n 1)
           echo "Signing $BINARY_PATH"
+          security find-identity -p codesigning -v
+          echo "Priting feeding it to grep"
+          security find-identity -p codesigning -v | grep "Developer ID Application"
+          echo "Taking top line"
+          security find-identity -p codesigning -v | grep "Developer ID Application" | head -n1
+          echo "using awk"
+          security find-identity -p codesigning -v | grep "Developer ID Application" | head -n1 | awk '{print substr($0, index($0,$2))}'
+          echo "using sed to replace"
+          security find-identity -p codesigning -v | grep "Developer ID Application" | head -n1 | awk '{print substr($0, index($0,$2))}' | sed 's/^[^"]*"//;s/".*//')
           IDENTITY=$(security find-identity -p codesigning -v | grep "Developer ID Application" | head -n1 | awk '{print substr($0, index($0,$2))}' | sed 's/^[^"]*"//;s/".*//')
           echo "Using identity: $IDENTITY"
           codesign --force --options runtime --timestamp --sign "$IDENTITY" "$BINARY_PATH"
