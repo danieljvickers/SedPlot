@@ -96,6 +96,7 @@ jobs:
           mv dist dist_old
           mkdir dist
           BINARY_PATH=$(ls dist_old/* | head -n 1)
+          echo "$AC_API_KEY" > AuthKey.p8
           zip dist/SedPlot.zip "$BINARY_PATH"
           echo "Zipped Binary"
           xcrun notarytool submit SedPlot.zip \
