@@ -41,8 +41,15 @@ jobs:
           MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
         run: |
           printf "%s" "$MAC_CERT_P12_BASE64" | base64 --decode > developer_id.p12
-          security import developer_id.p12 -k ~/Library/Keychains/login.keychain-db -P "$MAC_CERT_PASSWORD" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple: -k "" ~/Library/Keychains/login.keychain-db || true
+          security create-keychain -p "" build.keychain
+          echo "Created Key Chain"
+          security import developer_id.p12 -k build.keychain -P "$MAC_CERT_PASSWORD" -T /usr/bin/codesign
+          echo "1"
+          security list-keychains -s build.keychain
+          echo "2"
+          security unlock-keychain -p "" build.keychain
+          echo "3"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain || true
           rm developer_id.p12
 
       - name: Download FFmpeg
@@ -74,6 +81,7 @@ jobs:
           BINARY_PATH=$(ls dist/* | head -n 1)
           IDENTITY=$(security find-identity -p codesigning -v | grep -E 'Developer ID Application|Mac Developer' | head -n1 | awk -F\" '{print $2}')
           echo "Using identity: $IDENTITY"
+          security unlock-keychain -p "" build.keychain
           codesign --verbose=4 --force --options runtime --timestamp=none --sign "$IDENTITY" "$BINARY_PATH"
           codesign --verify --verbose=4 "$BINARY_PATH"
 
@@ -89,6 +97,7 @@ jobs:
           mkdir dist
           BINARY_PATH=$(ls dist_old/* | head -n 1)
           zip dist/SedPlot.zip "$BINARY_PATH"
+          echo "Zipped Binary"
           xcrun notarytool submit SedPlot.zip \
             --key AuthKey.p8 \
             --key-id "$AC_KEY_ID" \
