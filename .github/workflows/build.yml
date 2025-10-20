@@ -102,15 +102,39 @@ jobs:
           AC_ISSUER_ID: ${{ secrets.AC_ISSUER_ID }}
         run: |
           cd dist
+
+          echo "Zipping and checking the zip"
           ditto -c -k --keepParent SedPlot.app SedPlot.zip
+          zipinfo -1 SedPlot.zip | head
           
           echo "$AC_API_KEY" > AuthKey.p8
-          xcrun notarytool submit SedPlot.zip \
+          SUBMISSION_ID=$(xcrun notarytool submit SedPlot.zip \
             --key AuthKey.p8 \
             --key-id "$AC_KEY_ID" \
             --issuer "$AC_ISSUER_ID" \
-            --wait
-          
+            --team-id "PHMNSQWNJR" \
+            --output-format json | jq -r '.id')
+
+          echo "Submitted notarization with ID: $SUBMISSION_ID"
+
+          for i in {1..40}; do
+            STATUS=$(xcrun notarytool info "$SUBMISSION_ID" \
+              --key AuthKey.p8 \
+              --key-id "$AC_KEY_ID" \
+              --issuer "$AC_ISSUER_ID" \
+              --team-id "PHMNSQWNJR" \
+              --output-format json | jq -r '.status')
+            echo "Current status: $STATUS"
+            [[ "$STATUS" == "Accepted" || "$STATUS" == "Invalid" ]] && break
+            sleep 30
+          done
+
+          xcrun notarytool log "$SUBMISSION_ID" \
+            --key AuthKey.p8 \
+            --key-id "$AC_KEY_ID" \
+            --issuer "$AC_ISSUER_ID" \
+            --team-id "PHMNSQWNJR"
+                    
           cd ..
           xcrun stapler staple dist/SedPlot.app
           xcrun stapler validate dist/SedPlot.app
