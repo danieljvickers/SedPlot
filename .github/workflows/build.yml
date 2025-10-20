@@ -92,7 +92,7 @@ jobs:
           codesign --verbose=4 --force --options runtime --timestamp --entitlements .github/mac_build_tools/entitlements.plist --sign "$IDENTITY" dist/SedPlot.app
           codesign --verify --verbose=4 dist/SedPlot.app
           codesign --display --entitlements :- dist/SedPlot.app
-          spctl -a -vvv MyApp.app
+          spctl -a -vvv SedPlot.app
 
       - name: Notarize Binary
         if: runner.os == 'macOS'
