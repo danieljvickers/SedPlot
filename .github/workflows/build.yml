@@ -79,7 +79,7 @@ jobs:
           IDENTITY=$(security find-identity -p codesigning -v | grep -E 'Developer ID Application|Mac Developer' | head -n1 | awk -F\" '{print $2}')
           echo "Using identity: $IDENTITY"
           security unlock-keychain -p "" build.keychain
-          codesign --verbose=4 --force --options runtime --timestamp --entitlements .github/mac_build_tools/entitlements.plist --sign "$IDENTITY" "$BINARY_PATH"
+          codesign --verbose=4 --force --deep --options runtime --timestamp --entitlements .github/mac_build_tools/entitlements.plist --sign "$IDENTITY" "$BINARY_PATH"
           codesign --verify --verbose=4 "$BINARY_PATH"
 
           echo "Moving contents to SedPlot.app"
@@ -89,7 +89,7 @@ jobs:
           echo -n "APPL????" > dist/SedPlot.app/Contents/PkgInfo
 
           echo "Signing App"
-          codesign --verbose=4 --force --options runtime --timestamp --entitlements .github/mac_build_tools/entitlements.plist --sign "$IDENTITY" dist/SedPlot.app
+          codesign --verbose=4 --force --deep --options runtime --timestamp --entitlements .github/mac_build_tools/entitlements.plist --sign "$IDENTITY" dist/SedPlot.app
           codesign --verify --verbose=4 dist/SedPlot.app
           codesign --display --entitlements :- dist/SedPlot.app
 
