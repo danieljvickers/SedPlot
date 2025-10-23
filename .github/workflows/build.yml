@@ -17,7 +17,7 @@ jobs:
           - display: macos-x64
             os: macos
             arch: x64
-            runs-on: macos-13-large
+            runs-on: macos-latest
           # macOS Apple Silicon (arm64)
           - display: macos-arm64
             os: macos
