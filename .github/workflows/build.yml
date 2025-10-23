@@ -12,8 +12,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest]
-#        os: [ubuntu-latest, windows-latest, macos-latest]
+        arch: [x64, arm64]
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
       - uses: actions/checkout@v4
@@ -30,6 +30,7 @@ jobs:
           pip install pyinstaller
           pip install -r requirements.txt
           if [[ "$RUNNER_OS" == "macOS" ]]; then
+            brew update || true
             brew install python-tk
           fi
 
@@ -52,16 +53,42 @@ jobs:
         shell: bash
         run: |
           mkdir -p ffmpeg
+
           if [[ "$RUNNER_OS" == "Windows" ]]; then
-            curl -L -o ffmpeg.zip https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip
-            unzip ffmpeg.zip -d ffmpeg
+            if [[ "${{ matrix.arch }}" == "x64" ]]; then
+              curl -L -o ffmpeg.zip https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip
+              unzip ffmpeg.zip -d ffmpeg
+            else
+              curl -L -o ffmpeg.zip https://github.com/tordona/ffmpeg-win-arm64/releases/latest/download/ffmpeg-win-arm64.zip || true
+              if [ -f ffmpeg.zip ]; then unzip ffmpeg.zip -d ffmpeg; fi
+            fi
+
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            curl -L -o ffmpeg.zip https://evermeet.cx/ffmpeg/getrelease/zip
-            unzip ffmpeg.zip -d ffmpeg
-            chmod +x ffmpeg/ffmpeg
+            if [[ "${{ matrix.arch }}" == "arm64" ]]; then
+              brew install ffmpeg || true
+              if [ -x /opt/homebrew/bin/ffmpeg ]; then
+                cp /opt/homebrew/bin/ffmpeg ffmpeg/ffmpeg
+              elif command -v ffmpeg >/dev/null 2>&1; then
+                cp "$(command -v ffmpeg)" ffmpeg/ffmpeg
+              else
+                echo "brew ffmpeg not found; listing /usr/local and /opt/homebrew"
+                ls -l /usr/local/bin || true
+                ls -l /opt/homebrew/bin || true
+                exit 1
+              fi
+            else
+              curl -L -o ffmpeg.zip https://evermeet.cx/ffmpeg/getrelease/zip
+              unzip -o ffmpeg.zip -d ffmpeg
+            fi
+            chmod +x ffmpeg/ffmpeg || true
           elif [[ "$RUNNER_OS" == "Linux" ]]; then
-            curl -L -o ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
-            tar -xf ffmpeg.tar.xz --strip-components=1 -C ffmpeg
+            if [[ "${{ matrix.arch }}" == "x64" ]]; then
+              curl -L -o ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
+              tar -xf ffmpeg.tar.xz --strip-components=1 -C ffmpeg
+            else
+              curl -L -o ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-arm64-static.tar.xz
+              tar -xf ffmpeg.tar.xz --strip-components=1 -C ffmpeg
+            fi
           fi
 
       - name: Build with PyInstaller
@@ -149,11 +176,3 @@ jobs:
         with:
           name: ${{ runner.os }}-binary
           path: dist/*
-
-#      - name: Upload to GitHub Release
-#        if: startsWith(github.ref, 'refs/tags/')
-#        uses: softprops/action-gh-release@v2
-#        with:
-#          files: dist/*
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
