@@ -1,7 +1,11 @@
+print("Before GUI Imports")
+
 # GUI Imports
 import tkinter as tk
 from tkinter import messagebox, ttk
 from tkinter.filedialog import askopenfilenames, asksaveasfilename
+
+print("before system imports")
 
 # system importes
 import os
@@ -9,6 +13,8 @@ import platform
 import sys
 import shutil
 import subprocess
+
+print("Before matplotlib imports")
 
 from matplotlib import animation
 import matplotlib.pyplot as plt
@@ -62,9 +68,11 @@ def find_ffmpeg():
     
     return ffmpeg_location
 
+print ("Before FFMPEG Find")
 # set the environment and path veriables to where FFMPEG was found
 ffmpeg_location = find_ffmpeg()
-ffmpeg_location = None
+print("After finding ffmpeg")
+print(ffmpeg_location)
 if ffmpeg_location is not None:
     os.environ["FFMPEG_BINARY"] = ffmpeg_location
     os.environ["IMAGEIO_FFMPEG_EXE"] = ffmpeg_location
