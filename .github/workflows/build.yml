@@ -134,12 +134,14 @@ jobs:
             --key-id "$AC_KEY_ID" \
             --issuer "$AC_ISSUER_ID" \
             --team-id "PHMNSQWNJR"
-                    
+          rm AuthKey.p8
+
           cd ..
           xcrun stapler staple dist/SedPlot.app
           xcrun stapler validate dist/SedPlot.app
 
           spctl -a -vvv dist/SedPlot.app
+          rm dist/SedPlot.zip
 
 
       - name: Upload artifact
