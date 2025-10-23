@@ -131,7 +131,7 @@ To build the binary yourself, you will need to get a local ffmpeg and build the 
 
 ### Using the GUI
 
-TODO :: Put in a bunch of graphics and a discription of what all of the buttons do
+TODO :: Put in a bunch of graphics and a description of what all of the buttons do
 
 
 ### Using from Python
