@@ -1,11 +1,7 @@
-print("Before GUI Imports")
-
 # GUI Imports
 import tkinter as tk
 from tkinter import messagebox, ttk
 from tkinter.filedialog import askopenfilenames, asksaveasfilename
-
-print("before system imports")
 
 # system importes
 import os
@@ -13,8 +9,6 @@ import platform
 import sys
 import shutil
 import subprocess
-
-print("Before matplotlib imports")
 
 from matplotlib import animation
 import matplotlib.pyplot as plt
@@ -66,19 +60,16 @@ def find_ffmpeg():
         else:
             print(f"INFO :: Found FFMPEG globally. Using FFMPEG at {ffmpeg_location}")
     
+    print(f"FFMPEG found at location {ffmpeg_location}")
     return ffmpeg_location
 
-print ("Before FFMPEG Find")
 # set the environment and path veriables to where FFMPEG was found
 ffmpeg_location = find_ffmpeg()
-print("After finding ffmpeg")
-print(ffmpeg_location)
 if ffmpeg_location is not None:
     os.environ["FFMPEG_BINARY"] = ffmpeg_location
     os.environ["IMAGEIO_FFMPEG_EXE"] = ffmpeg_location
     animation.FFMpegWriter.exec_path = ffmpeg_location
     plt.rcParams['animation.ffmpeg_path'] = ffmpeg_location
-
 
 # library imports after ffmpeg is found
 from src.DSADisplay import DSADisplay
@@ -195,7 +186,7 @@ def set_channel_num(tk_variable=None, _=None, action=None):
 row_counter = 1
 root = tk.Tk()
 root.protocol("WM_DELETE_WINDOW", quit_me)  # cleanup protocol for when the window is closed
-root.title("SedPlot v0.4.1")
+root.title("SedPlot v1.0.0")
 
 # common DSA file input and output
 # Input
@@ -211,8 +202,6 @@ supported_output_filetypes = [
     ("PNG files", "*.png"),
     ("JPG files", "*.jpg"),
     ("GIF files", "*.gif"),
-    ("PDF files", "*.pdf"),
-    ("SVG files", "*.svg"),
     ("CSV files", "*.csv"),
     ("STL files", "*.stl"),
     ("All files", "*.*")
@@ -309,5 +298,7 @@ from gui.create_spectrogram_tab import create_spectrogram_tab
 create_spectrogram_tab(renderer, progress_object, spectrogram_tab, start_time_var)
 from gui.create_csv_tab import create_csv_tab
 create_csv_tab(renderer, csv_tab, start_time_var)
+from gui.create_advanced_tab import create_advanced_tab
+create_advanced_tab(renderer, advanced_tab)
 
 root.mainloop()

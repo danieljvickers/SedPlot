@@ -11,7 +11,7 @@ import shutil
 import subprocess
 
 TK_WIDTH = 75
-def create_dsa_tab(renderer, root):
+def create_advanced_tab(renderer, root):
     row_counter = 0
 
     def update_advanced_settings():
@@ -36,7 +36,7 @@ def create_dsa_tab(renderer, root):
     # set the amplitude in the time domain of the data for plotting
     time_amplitude_variable = tk.DoubleVar(value=renderer.graphicsSettings.timeDomainParameters.time_amplitude)
     time_amplitude_entry = tk.Entry(dsa_tab, textvariable=time_amplitude_variable, width=TK_WIDTH)
-    time_amplitude_label = tk.Label(dsa_tab, text='Slow Time (min)', font=('calibre', 10, 'bold'))
+    time_amplitude_label = tk.Label(dsa_tab, text='Time Amplitude (uV)', font=('calibre', 10, 'bold'))
     time_amplitude_label.grid(row=row_counter, column=1)
     time_amplitude_entry.grid(row=row_counter, column=2)
     row_counter += 1
