@@ -53,7 +53,7 @@ def find_ffmpeg():
             print(f"WARN :: Searched for FFMPEG at {ffmpeg_location} but found nothing. Searching globally...")
             ffmpeg_location = None  # reset the location
 
-    if not os.path.isfile(ffmpeg_location):  # if ffmpeg is not local, fall back to the global ffmpeg installation
+    if (not ffmpeg_location) or (not os.path.isfile(ffmpeg_location)):  # if ffmpeg is not local, fall back to the global ffmpeg installation
         ffmpeg_location = shutil.which("ffmpeg")  # sets the lcoation to the global installation
         if not ffmpeg_location:
             print("ERROR :: FFMPEG not found locally and is not installed. Video (MP4) file generation will be disabled. Install FFMPEG to resolve.")  # if it wasn't found, rase an exception
