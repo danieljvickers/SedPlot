@@ -131,7 +131,7 @@ To build the binary yourself, you will need to get a local ffmpeg and build the 
 
 This software was intended to be run via the GUI. For information on how to obtain EDF files from the Masimo SedLine, refer either to the [Masimo SedLine Documentation](https://techdocs.masimo.com/contentassets/c19b67c39baa430daf34fb73907d8578/lab-7373e-master.pdf) or watch the video below.
 
-[![How to Download EEG Data from a Masmo SedLine]{:target="_blank"}(https://img.youtube.com/vi/6julUdMuD9w/0.jpg)](https://www.youtube.com/watch?v=6julUdMuD9w)
+[![How to Download EEG Data from a Masmo SedLine](https://img.youtube.com/vi/6julUdMuD9w/0.jpg)](https://www.youtube.com/watch?v=6julUdMuD9w){:target="_blank"}
 
 ### Using the GUI
 
