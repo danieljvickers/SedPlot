@@ -42,9 +42,10 @@ If you cite us in your research, please consider sending an email to our lead de
 
 We provide a direct download of this library for Window, MacOS, and Linux (Ubuntu). If you only desire to have access to the plot generation via the GUI, we recommend that you download the binaries directly. You can find those binaries here:
 
-- Windows
-- MacOS
-- Linux (Ubuntu)
+- ![Windows (x86_x64)](https://drive.google.com/file/d/1oC3AnsG4CtZ8xBTtpagyV8tb6kD9TZoY/view?usp=drive_link)
+- ![MacOS (x86_x64)](http://danieljvickers.com/static/files/SedPlot-macos-x64.zip)
+- ![MacOS(arm64)](http://danieljvickers.com/static/files/SedPlot-macos-arm64.zip)
+- ![Linux (x86_x64)](https://drive.google.com/file/d/1NqfzY4Hc8uuVFXjvqww_2D57QVKyO9m0/view?usp=drive_link)
 
 Once the Windows and MacOS binaries are downloaded, they can immediately be run as a process. The Linux binaries are delivered as a `.zip` file and will first need to be unzipped. The library should work immediately. If this does not work for you or if you are on a non-supported operating system, you can install directly from the command line using the [Recommended for Developers](#recommended-for-developers) section below. Otherwise, you can contact the lead develpoper at `dnlvickers5@gmail.com` for software support.
 
