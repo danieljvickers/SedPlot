@@ -41,7 +41,7 @@ class DSADisplay:
 
     def load_eeg_data(self, inputFileName):
         if self.eegData:
-            del self.eegData  # TODO :: Determine if this kind of memory management is actually required. Also try ot determine if this must be thread safe.
+            del self.eegData
         try:
             self.eegData = EEGArray(inputFileName)
             self.external_broadcast("File Loaded")
