@@ -44,7 +44,10 @@ class DSADisplay:
             del self.eegData
         try:
             self.eegData = EEGArray(inputFileName)
-            self.external_broadcast("File Loaded")
+            if self.eegData.data_is_safe:
+                self.external_broadcast("File Loaded")
+            else:
+                self.external_broadcast("Data parameters vary between files. Image distortion may occur.", "warn")
         except:
             self.external_broadcast(f"Error Opening file(s). No such files or invalid data format.", 'error')
 
