@@ -12,6 +12,7 @@ class EEGArray:
         self.totalNumSamples = len(self.data[0])
         self.totalTime = math.floor(self.totalNumSamples / self.sampleRate)
         self.inputFiles = inputFiles
+        self.data_is_safe = True
 
     
     def load_array_of_data(self, file_array):
@@ -31,6 +32,8 @@ class EEGArray:
             assert os.path.exists(file), f"ERROR :: The file {file} does not exists."
             try:
                 signals, signal_headers, header = pyedflib.highlevel.read_edf(file)
+                if not (file == file_array[0]):
+                    self.data_is_safe = self.data_is_safe and self.sampleRate == signal_headers[0]['sample_rate']
                 self.sampleRate = signal_headers[0]['sample_rate']
                 if len(self.data) < len(signals):
                     for i in range(len(signals)):
@@ -39,6 +42,7 @@ class EEGArray:
                     self.data[channel_number] = np.concatenate((self.data[channel_number], signals[channel_number]))
             except:
                 print(f"Unable to load file: {file}")
+                self.data_is_safe = False
         
         # renormalize
         for i in range(len(self.data)):
