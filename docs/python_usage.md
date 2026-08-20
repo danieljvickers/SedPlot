@@ -19,6 +19,10 @@ The `EEGArray.py` file is generally the most-useful file for anyone trying to di
 | totalTime            | The total amount of time that the file lasts for, which is equal to `totalNumSamples / sampleRate` |
 | inputFiles           | The string or array of strings that was used to generate this particular EEGArray object |
 | data                 | A list of numpy arrays that contain the EEG time-series data. Each index in the list is the data for a different EEG channel (usually `len(data) = 4` for commercial EEG montitors) |
+| data_is_safe         | `False` if anything about the load was suspect, such as a file that had to be recovered by a fallback reader, a file that could not be read at all, or files whose sample rates or channel counts disagree |
+| load_warnings        | A list of human readable strings explaining every problem found while loading. Empty when `data_is_safe` is `True` |
+
+Files are read with `pyedflib.highlevel` first. If that refuses a file, which it does for damaged headers, unreadable annotation channels and recordings that were cut short mid-record, the loader falls back to reading channel by channel with `pyedflib.EdfReader` and then to parsing the EDF/BDF layout directly off disk. Data recovered by a fallback is still returned, but `data_is_safe` is set to `False` so a caller can warn about it. If every reader fails on every file, an `EEGLoadError` is raised.
 
 Raw data can simple be extracted directly from the array with python array slicing (`foo = EEGArray('/edf/file')` then `bar = foo.data[channel_number][start_index:end_index]`). If one desires to recieve a processed frame of EEG data in DSA form, then that can be accessed with the `get_dsa_frame` class method:
 
