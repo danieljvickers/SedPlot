@@ -47,7 +47,8 @@ class DSADisplay:
             if self.eegData.data_is_safe:
                 self.external_broadcast("File Loaded")
             else:
-                self.external_broadcast("Data parameters vary between files. Image distortion may occur.", "warn")
+                details = ' '.join(self.eegData.load_warnings)
+                self.external_broadcast(f"File loaded, but the data may be distorted. {details}".strip(), "warn")
         except:
             self.external_broadcast(f"Error Opening file(s). No such files or invalid data format.", 'error')
 
